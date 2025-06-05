@@ -1,27 +1,103 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
-    <title>Inicio</title>
-  </head>
-  <style>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Título principal de la página (aparece en la pestaña del navegador y resultados de búsqueda) -->
+    <title>Inicio | LuLaLi20</title>
+
+    <!-- Meta descripción para motores de búsqueda -->
+    <meta name="description" content="Bienvenido a la página oficial de LuLaLi20. Descubre más sobre mis proyectos e ideas.">
+
+    <!-- Open Graph Meta Tags (para redes sociales como Facebook, Twitter, etc.) -->
+    <meta property="og:title" content="Inicio | LuLaLi20" />
+    <meta property="og:description" content="LuLaLi20 Web - Explorando el mundo digital." />
+    <meta property="og:site_name" content="LuLaLi20">
+    <!-- IMPORTANTE: Asegúrate de que esta URL de imagen sea la URL directa al archivo de imagen, no a una página de GitHub que muestra la imagen.
+         Si está en tu repositorio de GitHub Pages y se sirve desde allí, la URL sería: https://lulali20.github.io/creeper.png
+         Si usas la URL de raw.githubusercontent.com: https://raw.githubusercontent.com/LuLaLi20/LuLaLi20.github.io/main/creeper.png -->
+    <meta property="og:image" content="https://lulali20.github.io/creeper.png" />
+    <meta property="og:image:alt" content="Logo Creeper LuLaLi20" /> <!-- Texto alternativo para la imagen OG -->
+    <meta property="og:url" content="https://lulali20.github.io/" /> <!-- Corregido: sin doble barra al final -->
+    <meta property="og:type" content="website" /> <!-- Tipo de contenido OG -->
+
+    <!-- Color del tema para la barra de direcciones en navegadores móviles -->
+    <meta name="theme-color" content="#6fc41f">
+
+    <!-- Favicon (opcional pero recomendado) - Reemplaza con tus propios favicons -->
+    <!-- <link rel="icon" href="/favicon.ico" type="image/x-icon"> -->
+    <!-- <link rel="apple-touch-icon" href="/apple-touch-icon.png"> -->
+
+    <!-- Enlace Canónico (ayuda a evitar contenido duplicado si esta página es accesible por múltiples URLs) -->
+    <link rel="canonical" href="https://lulali20.github.io/" />
+
+    <!-- Estilos CSS básicos (puedes moverlos a un archivo .css separado) -->
+    <style>
         body {
-            background-image: url('sunset_pending_keyart.png'); /* Ruta a tu imagen */
-            background-size: cover;/* Ajusta la imagen para cubrir toda la pantalla */
-            background-position: bottom; /* Centra la imagen */
-            background-attachment: scroll; /* Fija la imagen de fondo mientras haces scroll */
-        }<a href="mailto:LuLaLi20Minecraft@gmail.com">E-mail</a>
-  </style>
-  <body>
-  <center><img src="LuLaLi20_title.png" width="512" height="108" alt=""/></center>
-  <h1><h1><center>Bienvenidos a LuLaLi20</center></h1></h1>
-  <p></p>
-  <center><img src="Scaffolding.png" width="1000" height="1000" alt=""/></center>
-  <center><h1>Sobre mi</h1></center>
-  
-  <center><img src="Redes_sociales_title.png" width="512" height="240,5" alt=""/></center>
-  <h3><center><a href="https://discord.gg/3J6rmnzMGT" title="Discord"><img src="Discord_title.png" width="256" height="59,357" alt=""/></a></center></h3>
-  <h3><center><a href="https://youtube.com/@LuLaLi20" title="YouTube"><img src="YouTube_title.png" width="266" height="59,357" alt=""/></a></center></h3>
-  <h3><center><a href="https://whatsapp.com/channel/0029VaRyKNNJENy3pMTz4i3K" title="WhatsApp"><img src="WhatsApp_title.png" width="306" height="59,357" alt=""/></a></center></h3>
-  </body>
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+        }
+        header {
+            background-color: #6fc41f;
+            color: white;
+            padding: 1em 0;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+        }
+        img.logo {
+            max-width: 150px;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        p {
+            line-height: 1.6;
+        }
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+            font-size: 0.9em;
+        }
+        a {
+            color: #6fc41f;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Inicio | LuLaLi20</h1>
+    </header>
+
+    <main>
+        <p>¡Bienvenido a mi espacio web!</p>
+        <p>Esta es la página principal de LuLaLi20. Aquí podrás encontrar información sobre mis proyectos y mucho más.</p>
+
+        <!-- Muestra la imagen en la página (opcional pero bueno para el contenido) -->
+        <img src="https://lulali20.github.io/creeper.png" alt="Logo Creeper de LuLaLi20" class="logo">
+        <!-- O, si está en el mismo directorio que tu index.html y subes la imagen: -->
+        <!-- <img src="creeper.png" alt="Logo Creeper de LuLaLi20" class="logo"> -->
+
+        <p>Explora y descubre lo que tengo para ofrecer.</p>
+    </main>
+
+    <footer>
+        <p>© 2023 LuLaLi20. Todos los derechos reservados.</p>
+        <p>Sígueme en <a href="https://github.com/LuLaLi20" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+    </footer>
+
+</body>
 </html>
