@@ -533,9 +533,10 @@
 
             // Establecer tema oscuro por defecto al cargar
             applyTheme('dark');
+            applyTheme('dark');Add commentMore actions
             // Opcional: si quieres respetar la preferencia del sistema SÓLO al cargar, pero SIN GUARDARLA:
-               const initialTheme = prefersDarkScheme.matches ? 'dark' : 'light';
-               applyTheme(initialTheme); // Esto haría que si el OS está en claro, cargue en claro, pero se reseteará a oscuro si no se interactúa
+            // const initialTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+            // applyTheme(initialTheme); // Esto haría que si el OS está en claro, cargue en claro, pero se reseteará a oscuro si no se interactúa
         
             themeToggle.addEventListener('click', () => {
                 let newTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
