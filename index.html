@@ -9,46 +9,64 @@
     <meta name="description" content="Bienvenido al sitio oficial de LuLaLi20. Descubre mis últimos vídeos, gameplays, tutoriales y mucho más. ¡Únete a la comunidad!">
     <link rel="canonical" href="https://lulali20.github.io/" />
 
-    <!-- Open Graph (para redes sociales) -->
+    <!-- Open Graph -->
     <meta property="og:title" content="LuLaLi20 | Contenido Creativo y Gameplays" />
     <meta property="og:description" content="Explora el universo de LuLaLi20: gameplays épicos, tutoriales útiles y diversión garantizada. ¡No te pierdas mis últimos vídeos!" />
     <meta property="og:site_name" content="LuLaLi20">
     <meta property="og:url" content="https://lulali20.github.io/" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lulali20.github.io/creeper.png" /> <!-- Asegúrate que esta URL es correcta y directa a la imagen -->
+    <meta property="og:image" content="https://lulali20.github.io/creeper.png" />
     <meta property="og:image:alt" content="Logo LuLaLi20 Creeper" />
     <meta property="og:locale" content="es_ES" />
 
-    <!-- Twitter Cards (similar a Open Graph pero para Twitter) -->
+    <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@TuUsuarioDeTwitter"> <!-- Reemplaza si tienes Twitter -->
-    <meta name="twitter:creator" content="@TuUsuarioDeTwitter"> <!-- Reemplaza si tienes Twitter -->
+    <meta name="twitter:site" content="@TuUsuarioDeTwitter">
+    <meta name="twitter:creator" content="@TuUsuarioDeTwitter">
     <meta name="twitter:title" content="LuLaLi20 | Contenido Creativo y Gameplays">
     <meta name="twitter:description" content="Explora el universo de LuLaLi20: gameplays épicos, tutoriales útiles y diversión garantizada.">
-    <meta name="twitter:image" content="https://lulali20.github.io/creeper.png"> <!-- Misma imagen que OG -->
+    <meta name="twitter:image" content="https://lulali20.github.io/creeper.png">
 
     <!-- Color del tema y Favicon -->
-    <meta name="theme-color" content="#6fc41f">
-    <!-- Genera tus favicons aquí: https://realfavicongenerator.net/ y reemplaza los enlaces -->
+    <meta name="theme-color" id="themeColorMeta" content="#2c3e50"> <!-- Inicialmente color oscuro -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
 
-    <!-- Google Fonts (Ejemplo: Montserrat y Open Sans) -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #6fc41f; /* Tu color temático */
+            /* Tema Oscuro (por defecto) */
+            --primary-color: #6fc41f;
             --secondary-color: #58a61a;
-            --text-color: #333;
-            --bg-color: #f9f9f9;
-            --card-bg-color: #ffffff;
-            --footer-bg-color: #2c3e50;
-            --footer-text-color: #ecf0f1;
+            --text-color: #e0e0e0;
+            --text-color-muted: #b0b0b0;
+            --bg-color: #1e1e1e;
+            --bg-color-alt: #2a2a2a; /* Para cards, header, etc. */
+            --card-bg-color: #2c2c2c;
+            --border-color: #444;
+            --shadow-color: rgba(0,0,0,0.5);
+            --hero-overlay-color: rgba(0,0,0,0.7);
+            --theme-color-meta-dark: #2c3e50;
+            --theme-color-meta-light: #6fc41f;
+
             --font-primary: 'Montserrat', sans-serif;
             --font-secondary: 'Open Sans', sans-serif;
+        }
+
+        body.light-theme {
+            /* Tema Claro */
+            --text-color: #333;
+            --text-color-muted: #555;
+            --bg-color: #f9f9f9;
+            --bg-color-alt: #ffffff;
+            --card-bg-color: #ffffff;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0,0,0,0.1);
+            --hero-overlay-color: rgba(0,0,0,0.5);
         }
 
         body {
@@ -58,6 +76,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -69,12 +88,13 @@
 
         /* Header y Navegación */
         header {
-            background-color: var(--card-bg-color);
+            background-color: var(--bg-color-alt);
             padding: 15px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px var(--shadow-color);
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: background-color 0.3s ease;
         }
 
         nav {
@@ -89,6 +109,7 @@
         .logo-container {
             display: flex;
             align-items: center;
+            text-decoration: none;
         }
 
         .logo-img {
@@ -101,35 +122,64 @@
             font-family: var(--font-primary);
             font-size: 1.8em;
             color: var(--primary-color);
-            text-decoration: none;
         }
-
-        nav ul {
+        
+        nav .nav-links {
             list-style: none;
             padding: 0;
             margin: 0;
             display: flex;
+            align-items: center;
         }
 
-        nav ul li {
+        nav .nav-links li {
             margin-left: 25px;
         }
 
-        nav ul li a {
+        nav .nav-links li a {
             text-decoration: none;
             color: var(--text-color);
             font-weight: 600;
             transition: color 0.3s ease;
+            padding-bottom: 5px; /* Espacio para borde inferior */
         }
 
-        nav ul li a:hover, nav ul li a.active {
+        nav .nav-links li a:hover, nav .nav-links li a.active {
             color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
         }
+
+        .theme-toggle-button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1.5em; /* Ajusta tamaño del icono */
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-toggle-button svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .mobile-menu-button {
+            display: none; /* Oculto en escritorio */
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
 
         /* Sección Hero */
         .hero {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://via.placeholder.com/1920x600.png?text=Fondo+Gaming+LuLaLi20') no-repeat center center/cover; /* Reemplaza con una imagen tuya */
-            color: white;
+            background: linear-gradient(var(--hero-overlay-color), var(--hero-overlay-color)), url('https://via.placeholder.com/1920x600.png?text=Fondo+Gaming+LuLaLi20') no-repeat center center/cover;
+            color: #fff; /* Texto blanco siempre en hero */
             padding: 80px 20px;
             text-align: center;
         }
@@ -151,12 +201,14 @@
             font-family: var(--font-primary);
             font-size: 1.1em;
             border-radius: 5px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
             border: none;
             cursor: pointer;
+            display: inline-block; /* Para que el transform funcione */
         }
         .cta-button:hover {
             background-color: var(--secondary-color);
+            transform: translateY(-2px);
         }
 
         /* Secciones Generales */
@@ -180,19 +232,20 @@
         .video-card {
             background-color: var(--card-bg-color);
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px var(--shadow-color);
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
         .video-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 15px var(--shadow-color);
         }
         .video-embed-container {
             position: relative;
             padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
             height: 0;
             overflow: hidden;
+            background-color: #000; /* Fondo negro mientras carga el video */
         }
         .video-embed-container iframe {
             position: absolute;
@@ -210,14 +263,19 @@
             font-size: 1.3em;
             margin-top: 0;
             margin-bottom: 10px;
+            color: var(--text-color);
         }
         .video-info p {
             font-size: 0.9em;
-            color: #555;
+            color: var(--text-color-muted);
             margin-bottom: 0;
         }
 
         /* Sección Sobre Mí */
+        #about {
+            background-color: var(--bg-color-alt); /* Fondo ligeramente diferente */
+            transition: background-color 0.3s ease;
+        }
         #about .container {
             display: flex;
             align-items: center;
@@ -228,6 +286,7 @@
             height: auto;
             border-radius: 50%;
             border: 5px solid var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-color);
         }
         #about .about-text {
             flex: 1;
@@ -235,16 +294,16 @@
 
         /* Sección Comunidad / Contacto */
         #community {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--primary-color); /* Usar el color primario como fondo */
         }
         #community h2 {
-            color: white;
+            color: white; /* Asegurar contraste */
         }
         #community p {
             text-align: center;
             font-size: 1.1em;
             margin-bottom: 30px;
+            color: white; /* Asegurar contraste */
         }
         .social-links {
             text-align: center;
@@ -252,23 +311,32 @@
         .social-links a {
             margin: 0 15px;
             display: inline-block;
+            color: white; /* Iconos blancos sobre fondo primario */
         }
-        .social-links img {
-            width: 40px; /* Ajusta según tus iconos */
+        .social-links svg { /* Estilo para SVGs si los usas para iconos sociales */
+            width: 40px;
             height: 40px;
+            fill: currentColor;
             transition: transform 0.3s ease;
         }
-        .social-links img:hover {
-            transform: scale(1.1);
+        .social-links img { /* Si sigues usando img para iconos sociales */
+            width: 40px;
+            height: 40px;
+            transition: transform 0.3s ease;
+            filter: brightness(0) invert(1); /* Para hacerlos blancos si son negros */
         }
-
+        .social-links a:hover svg, .social-links a:hover img {
+            transform: scale(1.2);
+        }
 
         /* Footer */
         footer {
-            background-color: var(--footer-bg-color);
-            color: var(--footer-text-color);
+            background-color: var(--bg-color-alt);
+            color: var(--text-color-muted);
             text-align: center;
             padding: 30px 20px;
+            border-top: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         footer p {
             margin: 5px 0;
@@ -283,28 +351,42 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            nav ul {
-                /* Podrías implementar un menú hamburguesa aquí */
-                display: none; /* Simple ocultación por ahora */
+            .logo-text { font-size: 1.5em; }
+            nav .nav-links {
+                display: none; /* Oculto por defecto en móvil */
+                flex-direction: column;
+                position: absolute;
+                top: 70px; /* Altura del header aprox. */
+                left: 0;
+                width: 100%;
+                background-color: var(--bg-color-alt);
+                box-shadow: 0 2px 5px var(--shadow-color);
+                padding: 10px 0;
             }
-            .hero h1 {
-                font-size: 2.2em;
+            nav .nav-links.active { /* Mostrar menú */
+                display: flex;
             }
-            .hero p {
-                font-size: 1em;
+            nav .nav-links li {
+                margin: 10px 0;
+                text-align: center;
             }
-            section h2 {
-                font-size: 2em;
+            .mobile-menu-button {
+                display: block; /* Mostrar botón hamburguesa */
             }
+            .theme-toggle-button { margin-left: auto; margin-right: 15px; /* Ajustar posición con hamburguesa */}
+
+            .hero h1 { font-size: 2.2em; }
+            .hero p { font-size: 1em; }
+            section h2 { font-size: 2em; }
             #about .container {
                 flex-direction: column;
                 text-align: center;
             }
             #about img.profile-pic {
                 margin-bottom: 20px;
+                max-width: 200px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -315,11 +397,21 @@
                 <img src="https://lulali20.github.io/creeper.png" alt="Logo LuLaLi20" class="logo-img">
                 <span class="logo-text">LuLaLi20</span>
             </a>
-            <ul>
+            
+            <button class="mobile-menu-button" id="mobileMenuBtn" aria-label="Abrir menú">
+                ☰ <!-- Icono hamburguesa -->
+            </button>
+
+            <ul class="nav-links" id="navLinks">
                 <li><a href="#hero" class="active">Inicio</a></li>
                 <li><a href="#videos">Vídeos</a></li>
                 <li><a href="#about">Sobre Mí</a></li>
                 <li><a href="#community">Comunidad</a></li>
+                <li>
+                    <button class="theme-toggle-button" id="themeToggle" aria-label="Cambiar tema">
+                        <!-- El icono se cargará con JS -->
+                    </button>
+                </li>
             </ul>
         </nav>
     </header>
@@ -339,32 +431,30 @@
             <div class="container">
                 <h2>Mis Últimos Vídeos</h2>
                 <div class="videos-grid">
-                    <!-- Vídeo 1 (Reemplaza con tus propios vídeos) -->
+                    <!-- Vídeo 1 -->
                     <article class="video-card">
                         <div class="video-embed-container">
-                            <iframe src="https://www.youtube.com/embed/ID_DEL_VIDEO_1" title="Título del Vídeo 1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe src="https://www.youtube.com/embed/ID_DEL_VIDEO_1" title="Título del Vídeo 1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                         <div class="video-info">
                             <h3>Título Increíble de Mi Vídeo Más Reciente</h3>
                             <p>Una breve descripción de lo que trata este vídeo. ¡No te lo pierdas!</p>
                         </div>
                     </article>
-
                     <!-- Vídeo 2 -->
                     <article class="video-card">
                         <div class="video-embed-container">
-                            <iframe src="https://www.youtube.com/embed/ID_DEL_VIDEO_2" title="Título del Vídeo 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe src="https://www.youtube.com/embed/ID_DEL_VIDEO_2" title="Título del Vídeo 2" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                         <div class="video-info">
                             <h3>Otro Gameplay Asombroso o Tutorial Útil</h3>
                             <p>Descubre los secretos y estrategias en este emocionante vídeo.</p>
                         </div>
                     </article>
-
                     <!-- Vídeo 3 -->
                     <article class="video-card">
                         <div class="video-embed-container">
-                            <iframe src="https://www.youtube.com/embed/ID_DEL_VIDEO_3" title="Título del Vídeo 3" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe src="https://www.youtube.com/embed/ID_DEL_VIDEO_3" title="Título del Vídeo 3" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                         <div class="video-info">
                             <h3>El Favorito de la Audiencia o un Clásico</h3>
@@ -381,11 +471,11 @@
         <!-- Sección Sobre Mí -->
         <section id="about">
             <div class="container">
-                <img src="https://lulali20.github.io/creeper.png" alt="LuLaLi20" class="profile-pic"> <!-- O una foto tuya -->
+                <img src="https://lulali20.github.io/creeper.png" alt="LuLaLi20" class="profile-pic">
                 <div class="about-text">
                     <h2>Conoce a LuLaLi20</h2>
-                    <p>¡Hola! Soy LuLaLi20, un apasionado creador de contenido enfocado en [Menciona tus tipos de contenido: ej. gameplays de Minecraft, desarrollo de juegos, tutoriales de programación, etc.]. Mi objetivo es entretener, enseñar y construir una comunidad increíble.</p>
-                    <p>En mi canal de YouTube encontrarás [Describe brevemente qué ofreces: ej. aventuras emocionantes, guías detalladas, proyectos innovadores y mucha diversión]. ¡Espero que disfrutes del contenido tanto como yo disfruto creándolo!</p>
+                    <p>¡Hola! Soy LuLaLi20, un apasionado creador de contenido enfocado en [Menciona tus tipos de contenido]. Mi objetivo es entretener, enseñar y construir una comunidad increíble.</p>
+                    <p>En mi canal de YouTube encontrarás [Describe brevemente qué ofreces]. ¡Espero que disfrutes del contenido tanto como yo disfruto creándolo!</p>
                     <p>No olvides seguirme en mis redes para no perderte nada.</p>
                 </div>
             </div>
@@ -398,52 +488,94 @@
                 <p>¡Conecta conmigo y con otros fans en mis redes sociales! Participa, comenta y sé parte de la familia LuLaLi20.</p>
                 <div class="social-links">
                     <a href="https://www.youtube.com/channel/TU_ID_DE_CANAL_AQUI" target="_blank" rel="noopener noreferrer" title="YouTube">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/768px-YouTube_full-color_icon_%282017%29.svg.png" alt="YouTube">
+                        <svg viewBox="0 0 24 24"><path d="M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.73,18.78 17.93,18.84C17.13,18.91 16.44,18.94 15.84,18.94L15,19C12.81,19 11.2,18.84 10.17,18.56C9.27,18.31 8.69,17.73 8.44,16.83C8.31,16.36 8.22,15.73 8.16,14.93C8.09,14.13 8.06,13.44 8.06,12.84L8,12C8,9.81 8.16,8.2 8.44,7.17C8.69,6.27 9.27,5.69 10.17,5.44C10.64,5.31 11.27,5.22 12.07,5.16C12.87,5.09 13.56,5.06 14.16,5.06L15,5C17.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z"/></svg>
                     </a>
                     <a href="https://github.com/LuLaLi20" target="_blank" rel="noopener noreferrer" title="GitHub">
-                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
+                        <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.83,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/></svg>
                     </a>
-                    <!-- Añade más redes si las tienes (Twitter, Instagram, Discord, Twitch, etc.) -->
-                    <!-- Ejemplo Twitter:
-                    <a href="https://twitter.com/TuUsuarioDeTwitter" target="_blank" rel="noopener noreferrer" title="Twitter">
-                        <img src="URL_A_ICONO_TWITTER.png" alt="Twitter">
-                    </a>
-                    -->
+                    <!-- Añade más redes SVG aquí -->
                 </div>
             </div>
         </section>
-
     </main>
 
     <footer>
         <div class="container">
             <p>© <span id="year"></span> LuLaLi20. Todos los derechos reservados.</p>
             <p>Diseñado con <span style="color: var(--primary-color);">❤</span> para la comunidad.</p>
-            <p><a href="#">Política de Privacidad</a> | <a href="#">Términos de Uso</a> (Enlaces de ejemplo)</p>
+            <!-- <p><a href="#">Política de Privacidad</a> | <a href="#">Términos de Uso</a></p> -->
         </div>
     </footer>
 
     <script>
-        // Actualizar año en el footer
-        document.getElementById('year').textContent = new Date().getFullYear();
+                document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            const themeColorMeta = document.getElementById('themeColorMeta');
+            // const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)"); // Opcional: puedes usarlo si quieres respetar la preferencia inicial del OS
 
-        // Scroll suave para enlaces de navegación (opcional)
-        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                if(targetElement) {
-                    // Quitar clase 'active' de todos los enlaces
-                    document.querySelectorAll('nav a').forEach(link => link.classList.remove('active'));
-                    // Añadir clase 'active' al enlace clickeado
-                    this.classList.add('active');
-                    // Scroll
-                    window.scrollTo({
-                        top: targetElement.offsetTop - document.querySelector('header').offsetHeight, // Ajuste por header fijo
-                        behavior: 'smooth'
-                    });
+            const iconSun = `<svg viewBox="0 0 24 24"><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.45 16,14.73V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.73C6.19,13.45 5,11.38 5,9A7,7 0 0,1 12,2M3.5,10.5L4.91,11.14C4.46,11.9 4.18,12.74 4.08,13.61L2.5,14.03V10.5M21.5,10.5V14.03L19.92,13.61C19.82,12.74 19.54,11.9 19.09,11.14L20.5,10.5M12,5A4,4 0 0,0 8,9C8,10.76 8.84,12.24 10.12,13.09V16H13.88V13.09C15.16,12.24 16,10.76 16,9A4,4 0 0,0 12,5M7.91,6.08L6.5,5.4L7.5,4H10.33L11.05,2.55L12,2L12.95,2.55L13.67,4H16.5L17.5,5.4L16.09,6.08C15.34,5.54 14.47,5.18 13.5,5.08L12.97,3.5H11.03L10.5,5.08C9.53,5.18 8.66,5.54 7.91,6.08Z" /></svg>`; // Sol
+            const iconMoon = `<svg viewBox="0 0 24 24"><path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.2 6.21,3.88C6.96,3.35 8.13,4.2 8.05,5.04C7.5,10.27 9.66,15.26 14.19,17.44C16.35,18.5 18.8,18.39 18.97,15.95Z" /></svg>`; // Luna
+    
+            function applyTheme(theme) {
+                if (theme === 'light') {
+                    body.classList.add('light-theme');
+                    themeToggle.innerHTML = iconMoon;
+                    themeToggle.setAttribute('aria-label', 'Cambiar a tema oscuro');
+                    themeColorMeta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--theme-color-meta-light').trim());
+                    } else { // 'dark'
+                    body.classList.remove('light-theme');
+                    themeToggle.innerHTML = iconSun;
+                    themeToggle.setAttribute('aria-label', 'Cambiar a tema claro');
+                    themeColorMeta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--theme-color-meta-dark').trim());
                 }
+            }
+
+            // Establecer tema oscuro por defecto al cargar
+            applyTheme('dark');
+            // Opcional: si quieres respetar la preferencia del sistema SÓLO al cargar, pero SIN GUARDARLA:
+            // const initialTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+            // applyTheme(initialTheme); // Esto haría que si el OS está en claro, cargue en claro, pero se reseteará a oscuro si no se interactúa
+        
+            themeToggle.addEventListener('click', () => {
+                let newTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
+                applyTheme(newTheme);
+                // No se guarda en localStorage
+            });
+
+            // Actualizar año en el footer
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            // Scroll suave y active link para navegación
+            const navLinks = document.querySelectorAll('nav .nav-links a');
+            const headerHeight = document.querySelector('header').offsetHeight;
+    
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    if (this.getAttribute('href').startsWith('#')) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        const targetElement = document.querySelector(targetId);
+                        if(targetElement) {
+                            navLinks.forEach(link => link.classList.remove('active'));
+                            this.classList.add('active');
+                            if(document.getElementById('navLinks').classList.contains('active')) {
+                                document.getElementById('navLinks').classList.remove('active');
+                            }
+                            window.scrollTo({
+                                top: targetElement.offsetTop - headerHeight,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+        
+            // Menú hamburguesa
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mainNavLinks = document.getElementById('navLinks');
+            mobileMenuBtn.addEventListener('click', () => {
+                mainNavLinks.classList.toggle('active');
             });
         });
     </script>
