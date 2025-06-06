@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foro Estilo Lulali</title>
+    <style>
+        /* --- Estilos Base y Paleta de Colores (Inspirado en lulali20.github.io) --- */
+        :root {
+            --background-color: #121212;
+            --surface-color: #1a1a1a;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #888;
+            --accent-color: #ff007f;
+            --border-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: var(--surface-color);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.15);
+            border: 1px solid var(--border-color);
+        }
+
+        h1, h2 {
+            color: var(--accent-color);
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px rgba(255, 0, 127, 0.5);
+        }
+
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Vista de la Lista de Temas --- */
+        #forum-list-view {
+            transition: opacity 0.3s ease;
+        }
+
+        .topic-list {
+            list-style-type: none;
+        }
+
+        .topic-item {
+            background-color: #2a2a2a;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .topic-item:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-color);
+        }
+
+        .topic-link {
+            display: block;
+            padding: 15px 20px;
+        }
+
+        .topic-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-text-color);
+        }
+
+        .topic-meta {
+            font-size: 0.8em;
+            color: var(--secondary-text-color);
+            margin-top: 5px;
+        }
+
+        /* --- Vista de un Tema Individual y sus Respuestas --- */
+        #topic-view {
+            display: none; /* Se muestra con JS */
+            transition: opacity 0.3s ease;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .post {
+            background-color: #2a2a2a;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        .post-author {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .post-timestamp {
+            font-size: 0.8em;
+            color: var(--secondary-text-color);
+        }
+
+        /* --- Formulario de Respuesta --- */
+        #reply-form {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            background-color: var(--background-color);
+            color: var(--primary-text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 1em;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.5);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.7);
+        }
+
+        /* --- Clase para ocultar vistas --- */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- VISTA DE LA LISTA DE TEMAS (INICIAL) -->
+        <div id="forum-list-view">
+            <h1>Foro Minimalista</h1>
+            <ul class="topic-list" id="topic-list-container">
+                <!-- Los temas se generarán aquí con JavaScript -->
+            </ul>
+        </div>
+
+        <!-- VISTA DE UN TEMA INDIVIDUAL (OCULTA INICIALMENTE) -->
+        <div id="topic-view" class="hidden">
+            <a href="#" class="back-link" id="back-to-forum-link">← Volver al foro</a>
+            <h2 id="topic-title"></h2>
+            <div id="posts-container">
+                <!-- Los posts se generarán aquí con JavaScript -->
+            </div>
+
+            <form id="reply-form">
+                <h3>Escribe una respuesta</h3>
+                <textarea id="reply-content" placeholder="Tu mensaje..." required></textarea>
+                <button type="submit">Publicar Respuesta</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Base de Datos Falsa (en memoria) ---
+            const forumData = {
+                1: {
+                    title: "¿Cuál es tu lenguaje de programación favorito y por qué?",
+                    author: "@code_ninja",
+                    timestamp: "hace 2 horas",
+                    posts: [
+                        { author: "@code_ninja", timestamp: "hace 2 horas", content: "Abro debate. Para mí, últimamente ha sido Rust por su seguridad y rendimiento. Aunque JavaScript siempre tendrá un lugar especial en mi corazón por su versatilidad." },
+                        { author: "@py_lover", timestamp: "hace 1 hora", content: "Python sin duda. La sintaxis es limpia y la cantidad de librerías para ciencia de datos e IA es increíble. Es muy fácil empezar a construir cosas." },
+                        { author: "@frontend_dev", timestamp: "hace 30 minutos", content: "TypeScript. Es como JavaScript con superpoderes. Me ahorra muchísimos errores antes de que lleguen a producción." },
+                    ]
+                },
+                2: {
+                    title: "Recomendaciones de música para programar",
+                    author: "@dj_bits",
+                    timestamp: "hace 1 día",
+                    posts: [
+                        { author: "@dj_bits", timestamp: "hace 1 día", content: "Necesito nuevas playlists para concentrarme. ¿Qué escuchan ustedes? Yo suelo poner lofi o synthwave." },
+                        { author: "@metalhead", timestamp: "hace 20 horas", content: "Música clásica o bandas sonoras de videojuegos. La de 'Doom' es genial para cuando tienes que entregar un proyecto con fecha límite." },
+                    ]
+                },
+                3: {
+                    title: "El mejor setup de escritorio: ¿minimalista o lleno de gadgets?",
+                    author: "@clean_desk",
+                    timestamp: "hace 3 días",
+                    posts: [
+                        { author: "@clean_desk", timestamp: "hace 3 días", content: "Creo que un escritorio limpio y ordenado ayuda a tener una mente clara. Solo mi laptop, un monitor externo y un buen teclado mecánico. ¿Ustedes?" }
+                    ]
+                }
+            };
+
+            // --- Elementos del DOM ---
+            const forumListView = document.getElementById('forum-list-view');
+            const topicView = document.getElementById('topic-view');
+            const topicListContainer = document.getElementById('topic-list-container');
+            const backToForumLink = document.getElementById('back-to-forum-link');
+            const topicTitleEl = document.getElementById('topic-title');
+            const postsContainer = document.getElementById('posts-container');
+            const replyForm = document.getElementById('reply-form');
+            const replyContent = document.getElementById('reply-content');
+
+            // --- Funciones de Renderizado ---
+
+            // Renderiza la lista principal de temas
+            function renderForumList() {
+                topicListContainer.innerHTML = '';
+                for (const topicId in forumData) {
+                    const topic = forumData[topicId];
+                    const topicElement = document.createElement('li');
+                    topicElement.className = 'topic-item';
+                    topicElement.dataset.topicId = topicId; // Guardamos el ID del tema
+                    
+                    topicElement.innerHTML = `
+                        <a href="#" class="topic-link">
+                            <div class="topic-title">${topic.title}</div>
+                            <div class="topic-meta">Iniciado por ${topic.author} • ${topic.posts.length} respuestas</div>
+                        </a>
+                    `;
+                    
+                    topicListContainer.appendChild(topicElement);
+                }
+            }
+
+            // Renderiza la vista de un tema específico
+            function renderTopicView(topicId) {
+                const topic = forumData[topicId];
+                if (!topic) return;
+
+                topicTitleEl.textContent = topic.title;
+                postsContainer.innerHTML = '';
+
+                topic.posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.className = 'post';
+                    postElement.innerHTML = `
+                        <div class="post-header">
+                            <span class="post-author">${post.author}</span>
+                            <span class="post-timestamp">${post.timestamp}</span>
+                        </div>
+                        <div class="post-body">
+                            <p>${post.content}</p>
+                        </div>
+                    `;
+                    postsContainer.appendChild(postElement);
+                });
+                
+                // Guardar el ID del tema actual en el formulario para saber dónde añadir la respuesta
+                replyForm.dataset.currentTopicId = topicId;
+            }
+
+            // --- Funciones de Navegación ---
+
+            function showTopicView(topicId) {
+                renderTopicView(topicId);
+                forumListView.classList.add('hidden');
+                topicView.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            }
+
+            function showForumListView() {
+                topicView.classList.add('hidden');
+                forumListView.classList.remove('hidden');
+            }
+            
+            // --- Event Listeners ---
+
+            // Click en un tema de la lista
+            topicListContainer.addEventListener('click', (e) => {
+                const topicItem = e.target.closest('.topic-item');
+                if (topicItem) {
+                    e.preventDefault();
+                    const topicId = topicItem.dataset.topicId;
+                    showTopicView(topicId);
+                }
+            });
+
+            // Click en el enlace "Volver al foro"
+            backToForumLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showForumListView();
+            });
+
+            // Envío del formulario de respuesta
+            replyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const content = replyContent.value.trim();
+                const topicId = replyForm.dataset.currentTopicId;
+
+                if (content && topicId) {
+                    const newPost = {
+                        author: "@tu_usuario", // Usuario genérico para la respuesta
+                        timestamp: "ahora mismo",
+                        content: content
+                    };
+
+                    forumData[topicId].posts.push(newPost);
+                    
+                    // Limpiar el textarea y re-renderizar la vista del tema
+                    replyContent.value = '';
+                    renderTopicView(topicId);
+                    
+                    // Opcional: hacer scroll hasta el nuevo post
+                    postsContainer.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+
+            // --- Inicialización ---
+            renderForumList();
+        });
+    </script>
+</body>
+</html>
