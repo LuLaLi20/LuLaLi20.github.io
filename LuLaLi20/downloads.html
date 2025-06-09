@@ -9,18 +9,21 @@
 </head>
 <body>
     <header>
-        <!-- Tu <nav> aquí, no necesita cambios -->
         <nav>
             <a href="../index.html" class="logo-container"><img src="images/creeper.png" alt="Logo LuLaLi20" class="logo-img"><span class="logo-text">LuLaLi20</span></a>
             <button class="mobile-menu-button" id="mobileMenuBtn" aria-label="Abrir menú">☰</button>
             <ul class="nav-links" id="navLinks">
-                <li><a href="../index.html">Inicio</a></li><li><a href="downloads.html" class="active">Descargas</a></li><li><a href="news.html">Novedades</a></li><li><a href="community.html">Comunidad</a></li><li><a href="../index.html#about">Sobre Mí</a></li><li><button class="theme-toggle-button" id="themeToggle"></button></li>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="downloads.html" class="active">Descargas</a></li>
+                <li><a href="news.html">Novedades</a></li>
+                <li><a href="community.html">Comunidad</a></li>
+                <li><a href="../index.html#about">Sobre Mí</a></li>
+                <li><button class="theme-toggle-button" id="themeToggle"></button></li>
             </ul>
         </nav>
     </header>
 
     <main>
-        <!-- Nueva cabecera visual -->
         <div class="sub-hero">
             <div class="container">
                 <h1>Descargas</h1>
@@ -28,57 +31,54 @@
             </div>
         </div>
 
-        <!-- Contenido principal -->
         <section id="downloads-content">
             <div class="container">
                 <div class="downloads-grid">
                     <article class="download-card">
                         <div class="download-icon">
-                            <svg viewBox="0 0 24 24"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+                            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M14,2L20,8V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2H14M18,20V9H13V4H6V20H18M12,12L16,16H13.5V19H10.5V16H8L12,12Z"/></svg>
                         </div>
                         <div class="download-info">
                             <h3>Actions & Stuff 1.4</h3>
-                            <p>El paquete de texturas de oreville sudios que cambia las animaciones de Minecraft Bedrock por completo.</p>
+                            <p>El paquete de texturas de oreville studios que cambia las animaciones de Minecraft Bedrock.</p>
                             <span class="file-details">Versión: 1.4 | Tipo: .mcpack</span>
                         </div>
                         <a href="https://marketplace.ipodcraft.com/textura/actions-and-stuff" class="cta-button download-button">Descargar</a>
                     </article>
-                    <!--<article class="download-card"><!-- ... Tu segunda descarga ... --</article>
-                    <article class="download-card"><!-- ... Tu tercera descarga ... --</article>
 
                     <article class="download-card">
                         <div class="download-icon">
-                            <svg viewBox="0 0 24 24"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+                            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M21.04,4H2.96C2.43,4 2,4.43 2,4.96V19.04C2,19.57 2.43,20 2.96,20H21.04C21.57,20 22,19.57 22,19.04V4.96C22,4.43 21.57,4 21.04,4M20,18H4V6H20V18M18,7H6V9H18V7M18,10H6V12H18V10M18,13H6V15H18V13Z" /></svg>
                         </div>
                         <div class="download-info">
                             <h3>Texturas Chrome Dino Minecraft</h3>
-                            <p>¡Convierte al dinosaurio de Chrome en Minecraft! El paquete de texturas de mi vídeo.</p>
+                            <p>¡Convierte al dinosaurio de Chrome en un Creeper! El paquete de texturas de mi vídeo.</p>
                             <span class="file-details">Versión: 1.0 | Tipo: .png</span>
                         </div>
-                        <a href="#" class="cta-button download-button">Descargar</a>
+                        <a href="LuLaLi20/images/" download="Chrome_dino.png" class="cta-button download-button">Descargar</a>
                     </article>
 
                     <!--<article class="download-card">
                         <div class="download-icon">
-                             <svg viewBox="0 0 24 24"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>
+                             <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.8,15.5L16.2,16.1C15,17.3 13.5,18 12,18C10.5,18 9,17.3 7.8,16.1L7.2,15.5L8.5,14.2L9.1,14.8C9.9,15.6 10.9,16.1 12,16.1C13.1,16.1 14.1,15.6 14.9,14.8L15.5,14.2L16.8,15.5M12,6.5A1.5,1.5 0 0,1 13.5,8A1.5,1.5 0 0,1 12,9.5A1.5,1.5 0 0,1 10.5,8A1.5,1.5 0 0,1 12,6.5M7,11A1,1 0 0,1 8,12A1,1 0 0,1 7,13A1,1 0 0,1 6,12A1,1 0 0,1 7,11M17,11A1,1 0 0,1 18,12A1,1 0 0,1 17,13A1,1 0 0,1 16,12A1,1 0 0,1 17,11Z" /></svg>
                         </div>
                         <div class="download-info">
-                            <h3>Mis texturas del Dino</h3>
-                            <p>Las texturas que prometí en el vídeo del dino.</p>
-                            <span class="file-details">Versión: 1.0 | Tipo: .png</span>
+                            <h3>Mapa Supervivencia LuLaLi20</h3>
+                            <p>El mapa oficial de mi última serie de supervivencia. Explora mis construcciones y vive tu propia aventura.</p>
+                            <span class="file-details">Versión: Final S1 | Tipo: .mcworld</span>
                         </div>
                         <a href="#" class="cta-button download-button">Descargar</a>
                     </article>-->
-                    
                 </div>
             </div>
         </section>
     </main>
 
     <footer>
-        <!-- Tu <footer> aquí, no necesita cambios -->
         <div class="container">
-            <p>© <span id="year"></span> LuLaLi20. Todos los derechos reservados.</p><p>Diseñado con <span style="color: var(--primary-color);"> esfuerzo</span> para la comunidad.</p><a href="https://lulali20.github.io/Joan_Carrell/i"><span class="logo-text">Joan Carrell</span></a>
+            <p>© <span id="year"></span> LuLaLi20. Todos los derechos reservados.</p>
+            <p>Diseñado con <span style="color: var(--primary-color);"> esfuerzo</span> para la comunidad.</p>
+            <a href="https://lulali20.github.io/Joan_Carrell/i"><span class="logo-text">Joan Carrell</span></a>
         </div>
     </footer>
     <script src="../script.js" defer></script>
