@@ -4,39 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Descargas | LuLaLi20</title>
-    <meta name="description" content="Descarga recursos exclusivos de LuLaLi20: paquetes de texturas, mods, mapas y mucho más.">
-    <!-- Enlace al CSS en la raíz (sube un nivel) -->
     <link rel="stylesheet" href="../style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
+        <!-- Tu <nav> aquí, no necesita cambios -->
         <nav>
-            <a href="../index.html" class="logo-container">
-                <!-- Busca la imagen en la carpeta 'images' que está al mismo nivel -->
-                <img src="images/creeper.png" alt="Logo LuLaLi20" class="logo-img">
-                <span class="logo-text">LuLaLi20</span>
-            </a>
+            <a href="../index.html" class="logo-container"><img src="images/creeper.png" alt="Logo LuLaLi20" class="logo-img"><span class="logo-text">LuLaLi20</span></a>
             <button class="mobile-menu-button" id="mobileMenuBtn" aria-label="Abrir menú">☰</button>
             <ul class="nav-links" id="navLinks">
-                <li><a href="../index.html">Inicio</a></li>
-                <li><a href="downloads.html" class="active">Descargas</a></li>
-                <li><a href="news.html">Novedades</a></li>
-                <li><a href="community.html">Comunidad</a></li>
-                <li><a href="../index.html#about">Sobre Mí</a></li>
-                <li>
-                    <button class="theme-toggle-button" id="themeToggle" aria-label="Cambiar tema"></button>
-                </li>
+                <li><a href="../index.html">Inicio</a></li><li><a href="downloads.html" class="active">Descargas</a></li><li><a href="news.html">Novedades</a></li><li><a href="community.html">Comunidad</a></li><li><a href="../index.html#about">Sobre Mí</a></li><li><button class="theme-toggle-button" id="themeToggle"></button></li>
             </ul>
         </nav>
     </header>
 
     <main>
-        <section id="downloads-page">
+        <!-- Nueva cabecera visual -->
+        <div class="sub-hero">
             <div class="container">
-                <h2>Descargas</h2>
-                <p class="section-intro">Aquí encontrarás todos los recursos que he creado y mencionado en mis vídeos. ¡Espero que los disfrutes!</p>
-                
+                <h1>Descargas</h1>
+                <p>Recursos exclusivos, mapas y paquetes de texturas creados para la comunidad.</p>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <section id="downloads-content">
+            <div class="container">
                 <div class="downloads-grid">
                     <article class="download-card">
                         <div class="download-icon">
@@ -44,11 +38,13 @@
                         </div>
                         <div class="download-info">
                             <h3>Actions & Stuff 1.4</h3>
-                            <p>El paquete de acciones para Game Maker Studio que mejora la productividad y facilita la creación de juegos.</p>
-                            <span class="file-details">Versión: 1.4 | Tipo: .yymp</span>
+                            <p>El paquete de texturas de oreville sudios que cambia las animaciones de Minecraft Bedrock por completo.</p>
+                            <span class="file-details">Versión: 1.4 | Tipo: .mcpack</span>
                         </div>
                         <a href="https://marketplace.ipodcraft.com/textura/actions-and-stuff" class="cta-button download-button">Descargar</a>
                     </article>
+                    <!--<article class="download-card"><!-- ... Tu segunda descarga ... --</article>
+                    <article class="download-card"><!-- ... Tu tercera descarga ... --</article>
 
                     <article class="download-card">
                         <div class="download-icon">
@@ -73,20 +69,18 @@
                         </div>
                         <a href="#" class="cta-button download-button">Descargar</a>
                     </article>-->
+                    
                 </div>
             </div>
         </section>
     </main>
 
     <footer>
+        <!-- Tu <footer> aquí, no necesita cambios -->
         <div class="container">
-            <p>© <span id="year"></span> LuLaLi20. Todos los derechos reservados.</p>
-            <p>Diseñado con <span style="color: var(--primary-color);"> esfuerzo</span> para la comunidad.</p>
-            <a href="https://lulali20.github.io/Joan_Carrell/i"><span class="logo-text">Joan Carrell</span></a>
+            <p>© <span id="year"></span> LuLaLi20. Todos los derechos reservados.</p><p>Diseñado con <span style="color: var(--primary-color);"> esfuerzo</span> para la comunidad.</p><a href="https://lulali20.github.io/Joan_Carrell/i"><span class="logo-text">Joan Carrell</span></a>
         </div>
     </footer>
-    
-    <!-- Enlace al JS en la raíz (sube un nivel) -->
     <script src="../script.js" defer></script>
 </body>
 </html>
