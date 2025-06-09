@@ -108,7 +108,7 @@ footer a:hover { text-decoration: underline; }
 .video-info h3 { font-family: var(--font-primary); font-size: 1.3em; margin-top: 0; margin-bottom: 10px; }
 #about .container { display: flex; align-items: center; gap: 40px; }
 #about img.profile-pic { max-width: 250px; border-radius: 50%; border: 5px solid var(--primary-color); box-shadow: 0 0 15px var(--primary-color); }
-/* Sección Comunidad / Contacto (CORREGIDA) */
+/* Sección Comunidad / Contacto */
 #community {
     background-color: var(--primary-color);
 }
