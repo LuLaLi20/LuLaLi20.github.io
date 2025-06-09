@@ -131,15 +131,69 @@ footer a:hover { text-decoration: underline; }
 .read-more { color: var(--primary-color); text-decoration: none; font-weight: bold; margin-top: auto; align-self: flex-start; }
 .read-more:hover { text-decoration: underline; }
 
-/* --- Descargas --- */
-.downloads-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
-.download-card { background-color: var(--card-bg-color); border-radius: 8px; padding: 25px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 10px var(--shadow-color); transition: transform 0.3s ease; }
-.download-card:hover { transform: translateY(-5px); }
-.download-icon svg { width: 50px; height: 50px; fill: var(--primary-color); margin-bottom: 20px; }
-.download-info h3 { margin-top: 0; font-family: var(--font-primary); }
-.download-info p { color: var(--text-color-muted); font-size: 0.9em; flex-grow: 1; }
-.file-details { font-size: 0.8em; color: var(--text-color-muted); display: block; margin-bottom: 20px; font-style: italic; }
-.download-button { width: 100%; margin-top: auto; }
+/* --- Página de Descargas (DISEÑO MEJORADO CON IMÁGENES) --- */
+.downloads-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.download-card {
+    background-color: var(--card-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Esto es clave para que la imagen se adapte a los bordes redondeados */
+}
+
+.download-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Estilo para la imagen del banner */
+.download-card img {
+    width: 100%;
+    height: 180px; /* Altura fija para la imagen, ajústala si quieres */
+    object-fit: cover; /* Asegura que la imagen cubra el espacio sin deformarse */
+    display: block;
+}
+
+/* Contenedor para el texto y el botón */
+.download-info {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Hace que este div ocupe todo el espacio sobrante */
+}
+
+.download-info h3 {
+    margin: 0 0 10px 0;
+    font-family: var(--font-primary);
+    font-size: 1.6em;
+}
+
+.download-info p {
+    color: var(--text-color-muted);
+    font-size: 0.9em;
+    flex-grow: 1; /* Empuja el contenido de abajo hacia el final */
+    margin-bottom: 15px;
+}
+
+.file-details {
+    font-size: 0.8em;
+    color: var(--text-color-muted);
+    display: block;
+    margin-bottom: 25px;
+    font-style: italic;
+}
+
+.download-button {
+    width: 100%;
+    margin-top: auto; /* ¡Magia! Empuja el botón al final de la tarjeta */
+    text-align: center;
+}
 
 /* --- Comunidad --- */
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
