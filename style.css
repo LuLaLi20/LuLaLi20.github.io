@@ -108,11 +108,46 @@ footer a:hover { text-decoration: underline; }
 .video-info h3 { font-family: var(--font-primary); font-size: 1.3em; margin-top: 0; margin-bottom: 10px; }
 #about .container { display: flex; align-items: center; gap: 40px; }
 #about img.profile-pic { max-width: 250px; border-radius: 50%; border: 5px solid var(--primary-color); box-shadow: 0 0 15px var(--primary-color); }
-#community { background-color: var(--primary-color); }
-#community h2, #community p { color: white; }
-.social-links svg { width: 40px; height: 40px; fill: currentColor; transition: transform 0.3s ease; }
-.social-links a:hover svg { transform: scale(1.2); }
+/* Sección Comunidad / Contacto (CORREGIDA) */
+#community {
+    background-color: var(--primary-color);
+}
+#community h2,
+#community p {
+    color: white; /* Asegura el contraste para el texto */
+    text-align: center;
+}
 
+#community p {
+    font-size: 1.1em;
+    margin-bottom: 30px;
+}
+
+.social-links {
+    text-align: center;
+}
+
+/* REGLA CORREGIDA Y MEJORADA */
+.social-links a {
+    display: inline-block;
+    margin: 0 15px;
+    /* Forzamos el color del icono a ser blanco */
+    color: white !important; 
+    /* Quitamos el subrayado del enlace */
+    text-decoration: none; 
+}
+
+.social-links svg {
+    width: 40px;
+    height: 40px;
+    /* Hereda el color (blanco) de la etiqueta <a> de arriba */
+    fill: currentColor; 
+    transition: transform 0.3s ease;
+}
+
+.social-links a:hover svg {
+    transform: scale(1.2);
+}
 /* =========================================
    ESTILOS PARA SUBPÁGINAS
    ========================================= */
