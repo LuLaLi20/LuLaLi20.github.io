@@ -200,7 +200,6 @@ footer a:hover { text-decoration: underline; }
     padding: 25px;
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Hace que este div ocupe todo el espacio sobrante */
 }
 
 .download-info h3 {
