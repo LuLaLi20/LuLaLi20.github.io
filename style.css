@@ -166,6 +166,118 @@ footer a:hover { text-decoration: underline; }
 .read-more { color: var(--primary-color); text-decoration: none; font-weight: bold; margin-top: auto; align-self: flex-start; }
 .read-more:hover { text-decoration: underline; }
 
+/* =========================================
+   PÁGINA DE ARTÍCULO DE NOTICIA INDIVIDUAL
+   ========================================= */
+#news-article-content .container {
+    max-width: 800px; /* Limita el ancho para mejor legibilidad del texto */
+}
+
+.article-image {
+    width: 100%;
+    max-height: 450px; /* Ajusta según tus preferencias */
+    object-fit: cover; /* Para que la imagen cubra bien sin deformarse */
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px var(--shadow-color);
+}
+
+.article-meta {
+    font-size: 0.9em;
+    color: var(--text-color-muted);
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+.article-meta p {
+    margin: 5px 0;
+}
+
+.article-text {
+    font-size: 1.05em; /* Ligeramente más grande para lectura cómoda */
+}
+
+.article-text h2, 
+.article-text h3,
+.article-text h4 { /* Para subtítulos dentro del artículo */
+    font-family: var(--font-primary);
+    color: var(--primary-color);
+    margin-top: 35px;
+    margin-bottom: 15px;
+}
+.article-text h2 { 
+    font-size: 1.9em; 
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+.article-text h3 { font-size: 1.6em; }
+.article-text h4 { font-size: 1.3em; }
+
+
+.article-text p {
+    margin-bottom: 20px;
+    line-height: 1.7; /* Mayor interlineado para legibilidad */
+}
+.article-text ul, .article-text ol {
+    margin-bottom: 20px;
+    padding-left: 30px; /* Indentación estándar para listas */
+}
+.article-text li {
+    margin-bottom: 10px;
+}
+.article-text a { /* Estilo para enlaces dentro del cuerpo del artículo */
+    color: var(--primary-color);
+    text-decoration: underline;
+    font-weight: bold;
+}
+.article-text a:hover {
+    text-decoration: none;
+}
+.article-text blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding: 10px 20px;
+    margin: 25px 0;
+    font-style: italic;
+    color: var(--text-color-muted);
+    background-color: var(--bg-color-alt); /* Un fondo sutil */
+    border-radius: 0 4px 4px 0;
+}
+.article-text img { /* Para imágenes dentro del cuerpo del texto */
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 20px 0;
+    display: block; /* Para centrar si se usa margin auto */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.back-link-container {
+    text-align: center; /* Centra el botón/enlace de volver */
+    margin-top: 40px;
+    padding-top: 25px;
+    border-top: 1px solid var(--border-color);
+}
+
+.back-link {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: var(--bg-color-alt);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    text-decoration: none;
+    font-family: var(--font-primary);
+    font-size: 1em;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.back-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
 /* --- Página de Descargas (DISEÑO MEJORADO CON IMÁGENES) --- */
 .downloads-grid {
     display: grid;
