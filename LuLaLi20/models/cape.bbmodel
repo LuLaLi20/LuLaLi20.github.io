@@ -1,0 +1,67 @@
+{
+	"meta": {
+		"format_version": "4.5",
+		"model_format": "free",
+		"box_uv": false,
+		"creation_time": 1700000001,
+		"blockbench_version": "4.9.4"
+	},
+	"name": "capa_para_render",
+	"resolution": {"width": 64, "height": 32},
+	"elements": [
+		{
+			"name": "cape_plane",
+			"from": [-5, -16, 0],
+			"to": [5, 0, 0],
+			"thickness": 0.01,
+			"faces": {
+				"north": {"uv": [12, 1, 22, 17], "texture": "#cape_texture"},
+				"south": {"uv": [1, 1, 11, 17], "texture": "#cape_texture"}
+			}
+		}
+	],
+	"textures": [
+		{
+			"path": "capa_textura1.png",
+			"name": "capa_textura1.png",
+			"folder": "",
+			"namespace": "",
+			"id": "cape_texture",
+			"particle": false,
+			"render_mode": "default",
+			"visible": true,
+			"mode": "bitmap",
+			"saved": false,
+			"source": "empty"
+		}
+	],
+	"outliner": [
+		{
+			"name": "cape_group",
+			"origin": [0, 0, 0],
+			"color": 0,
+			"uuid": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+			"export": true,
+			"isOpen": true,
+			"locked": false,
+			"visibility": true,
+			"autouv": 0,
+			"children": [
+				{
+					"name": "cape_plane",
+					"origin": [0, 0, 0],
+					"color": 0,
+					"uuid": "0fedcba9-8765-4321-0fed-cba987654321",
+					"export": true,
+					"isOpen": true,
+					"locked": false,
+					"visibility": true,
+					"autouv": 0,
+					"children": [],
+					"type": "cube"
+				}
+			],
+			"type": "group"
+		}
+	]
+}
