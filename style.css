@@ -362,6 +362,87 @@ footer a:hover { text-decoration: underline; }
 }
 */
 
+/* =========================================
+   AÑADIDO: Filtros de Descargas
+   ========================================= */
+.downloads-filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Para que se ajuste bien en móviles */
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#searchInput {
+    flex-grow: 1; /* Para que ocupe el espacio disponible */
+    min-width: 250px; /* Ancho mínimo */
+    padding: 12px 15px;
+    font-size: 1em;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--bg-color-alt);
+    color: var(--text-color);
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#searchInput:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(111, 196, 31, 0.3); /* Sombra sutil al enfocar */
+}
+
+.tag-filter-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tag-filter-container span {
+    font-weight: 600;
+    color: var(--text-color-muted);
+    margin-right: 5px;
+}
+
+.tag-button {
+    padding: 8px 15px;
+    font-family: var(--font-secondary);
+    font-size: 0.9em;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg-color);
+    color: var(--text-color);
+    border-radius: 20px; /* Píldoras redondeadas */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.tag-button:hover {
+    background-color: var(--bg-color-alt);
+    border-color: var(--primary-color);
+}
+
+.tag-button.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Para el mensaje de no resultados */
+#no-results-message {
+    /* El estilo ya está inline, pero puedes moverlo aquí si prefieres */
+}
+
+@media (max-width: 768px) {
+    .downloads-filter-controls {
+        flex-direction: column;
+        align-items: stretch; /* Ocupan todo el ancho */
+    }
+}
+
 /* --- Comunidad --- */
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
 .gallery-item { background-color: var(--card-bg-color); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px var(--shadow-color); transition: transform 0.3s ease; }
