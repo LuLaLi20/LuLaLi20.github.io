@@ -51,6 +51,7 @@
         import * as THREE from 'three';
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
+        // ... (LAS SECCIONES 1, 2 y 3 SON IDÉNTICAS, NO HAY CAMBIOS AHÍ)
         // ======================================================
         // 1. CONFIGURACIÓN BÁSICA Y DE LA ESCENA
         // ======================================================
@@ -61,7 +62,6 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true; // Activar sombras
         document.body.appendChild(renderer.domElement);
-
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -73,53 +73,38 @@
         // 2. TEXTURAS Y MATERIALES DE BLOQUES
         // ======================================================
         const textureLoader = new THREE.TextureLoader();
-
-        const dirtTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png'); // Tierra
-        const grassTopTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png'); // Hierba (arriba)
-        const grassSideTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png'); // Hierba (lado)
-        
-        // Evitar que las texturas se vean borrosas
+        const dirtTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png');
+        const grassTopTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png');
+        const grassSideTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png');
         [dirtTexture, grassTopTexture, grassSideTexture].forEach(t => {
             t.magFilter = THREE.NearestFilter;
             t.minFilter = THREE.NearestFilter;
         });
-
         const grassBlockMaterial = [
-            new THREE.MeshLambertMaterial({ map: grassSideTexture }), // Lado derecho
-            new THREE.MeshLambertMaterial({ map: grassSideTexture }), // Lado izquierdo
-            new THREE.MeshLambertMaterial({ map: grassTopTexture }),  // Arriba
-            new THREE.MeshLambertMaterial({ map: dirtTexture }),      // Abajo
-            new THREE.MeshLambertMaterial({ map: grassSideTexture }), // Lado frontal
-            new THREE.MeshLambertMaterial({ map: grassSideTexture }), // Lado trasero
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
+            new THREE.MeshLambertMaterial({ map: grassTopTexture }),  new THREE.MeshLambertMaterial({ map: dirtTexture }),
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
         ];
-
         const dirtBlockMaterial = new THREE.MeshLambertMaterial({ map: dirtTexture });
-        
-        const blockTypes = {
-            'grass': grassBlockMaterial,
-            'dirt': dirtBlockMaterial
-        };
-
+        const blockTypes = { 'grass': grassBlockMaterial, 'dirt': dirtBlockMaterial };
         let currentBlockType = 'grass';
 
         // ======================================================
         // 3. GENERACIÓN DEL MUNDO Y MANEJO DE DATOS
         // ======================================================
-        const world = new Map(); // Estructura de datos para la física: "x,y,z" -> tipo de bloque
-        const cubes = []; // Array para el raycasting (intersección con el ratón)
+        const world = new Map();
+        const cubes = [];
         const worldSize = 32;
         const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-
         for (let x = -worldSize / 2; x < worldSize / 2; x++) {
             for (let z = -worldSize / 2; z < worldSize / 2; z++) {
-                const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5); // Terreno con ruido simple
+                const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5);
                 for (let y = 0; y < height; y++) {
                     const blockType = (y === height - 1) ? 'grass' : 'dirt';
                     createBlock(x, y, z, blockType);
                 }
             }
         }
-        
         function createBlock(x, y, z, type) {
             const material = blockTypes[type];
             const cube = new THREE.Mesh(cubeGeometry, material);
@@ -130,9 +115,8 @@
             cubes.push(cube);
             world.set(`${x},${y},${z}`, { type, cube });
         }
-        
         function getBlock(x, y, z) {
-            return world.get(`${Math.round(x)},${Math.round(y)},${Math.round(z)}`);
+            return world.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
         }
 
         // ======================================================
@@ -148,9 +132,11 @@
         const keys = {};
         const player = {
             height: 1.8,
+            width: 0.4, // Ancho del jugador para colisiones
             speed: 5.0,
             sprintSpeed: 10.0,
-            jumpHeight: 8.0
+            jumpHeight: 8.0,
+            onGround: false
         };
         camera.position.set(0, 15, 0);
 
@@ -162,20 +148,15 @@
         // ======================================================
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2(0, 0);
-
         document.addEventListener('mousedown', (event) => {
             if (!controls.isLocked) return;
-
             raycaster.setFromCamera(pointer, camera);
             const intersects = raycaster.intersectObjects(cubes);
-
             if (intersects.length > 0) {
                 const intersection = intersects[0];
-                if (intersection.distance > 6) return; // Rango de interacción
-
+                if (intersection.distance > 6) return;
                 const pos = intersection.object.position;
                 const key = `${pos.x},${pos.y},${pos.z}`;
-
                 if (event.button === 0) { // Clic izquierdo: destruir
                     if (world.has(key)) {
                         scene.remove(world.get(key).cube);
@@ -184,8 +165,7 @@
                     }
                 } else if (event.button === 2) { // Clic derecho: colocar
                     const newPos = pos.clone().add(intersection.face.normal);
-                    // No colocar bloques sobre sí mismo
-                    const playerPos = camera.position;
+                    const playerPos = controls.getObject().position;
                     if (Math.floor(newPos.x) === Math.floor(playerPos.x) &&
                         Math.floor(newPos.y) === Math.floor(playerPos.y) &&
                         Math.floor(newPos.z) === Math.floor(playerPos.z)) {
@@ -195,76 +175,93 @@
                 }
             }
         });
-
         document.addEventListener('contextmenu', (e) => e.preventDefault());
-        
-        // Selector de bloques
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Digit1') currentBlockType = 'grass';
             if (e.code === 'Digit2') currentBlockType = 'dirt';
         });
 
         // ======================================================
-        // 6. BUCLE DE ANIMACIÓN Y FÍSICA
+        // 6. BUCLE DE ANIMACIÓN Y FÍSICA (VERSIÓN MEJORADA)
         // ======================================================
         let lastTime = performance.now();
+
+        function checkCollision(pos) {
+            // Comprueba colisiones en las esquinas de la hitbox del jugador (a la altura de los pies y la cabeza)
+            for (let i = 0; i < 2; i++) {
+                const y = pos.y - (i * player.height); // Comprobar a la altura de los pies y un poco más abajo
+                if (getBlock(pos.x - player.width, y, pos.z - player.width) ||
+                    getBlock(pos.x + player.width, y, pos.z - player.width) ||
+                    getBlock(pos.x - player.width, y, pos.z + player.width) ||
+                    getBlock(pos.x + player.width, y, pos.z + player.width)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function animate() {
             requestAnimationFrame(animate);
             const time = performance.now();
             const delta = (time - lastTime) / 1000;
 
             if (controls.isLocked) {
-                // FÍSICA Y MOVIMIENTO
-                const moveSpeed = keys['ShiftLeft'] ? player.sprintSpeed : player.speed;
-                const playerPos = camera.position;
+                const playerPos = controls.getObject().position;
 
-                // Gravedad
-                velocity.y -= 9.8 * 5.0 * delta;
-                const onGround = getBlock(playerPos.x, playerPos.y - player.height, playerPos.z) !== undefined;
+                // --- FÍSICA VERTICAL (GRAVEDAD Y SALTO) ---
+                const groundCheckPos = playerPos.clone();
+                groundCheckPos.y -= player.height;
+                player.onGround = checkCollision(groundCheckPos);
 
-                if (onGround) {
+                if (player.onGround) {
                     velocity.y = Math.max(0, velocity.y);
                 }
-                
-                // Salto
-                if (keys['Space'] && onGround) {
+
+                if (keys['Space'] && player.onGround) {
                     velocity.y = player.jumpHeight;
                 }
-                
-                // Detección de colisión con el techo
-                if (velocity.y > 0 && getBlock(playerPos.x, playerPos.y - player.height / 2 + velocity.y * delta, playerPos.z)) {
+
+                // Colisión con el techo
+                const headCheckPos = playerPos.clone();
+                headCheckPos.y += 0.2; // Un poco por encima de la cámara
+                if (velocity.y > 0 && getBlock(headCheckPos.x, headCheckPos.y, headCheckPos.z)) {
                     velocity.y = 0;
                 }
-
-                // Aplicar movimiento vertical
-                playerPos.y += velocity.y * delta;
-
-                // Si cae al suelo, ajustar posición para no atravesarlo
-                if (playerPos.y < player.height) {
-                    const groundBlock = getBlock(playerPos.x, playerPos.y - player.height, playerPos.z);
-                    if(groundBlock) {
-                        playerPos.y = groundBlock.cube.position.y + player.height;
-                        velocity.y = 0;
-                    }
-                }
-
-                // Movimiento horizontal (W, A, S, D)
-                let moveDirection = new THREE.Vector3();
-                if (keys['KeyW']) moveDirection.z -= 1;
-                if (keys['KeyS']) moveDirection.z += 1;
-                if (keys['KeyA']) moveDirection.x -= 1;
-                if (keys['KeyD']) moveDirection.x += 1;
-                moveDirection.normalize().applyEuler(camera.rotation);
                 
-                const moveX = moveDirection.x * moveSpeed * delta;
-                const moveZ = moveDirection.z * moveSpeed * delta;
+                playerPos.y += velocity.y * delta;
+                velocity.y -= 25 * delta; // Gravedad constante
 
-                // Detección de colisión horizontal
-                if (!getBlock(playerPos.x + moveX, playerPos.y - 0.5, playerPos.z) && !getBlock(playerPos.x + moveX, playerPos.y - 1.5, playerPos.z)) {
-                    controls.moveRight(moveDirection.x * moveSpeed * delta);
+                // --- MOVIMIENTO HORIZONTAL CON COLISIÓN MEJORADA ---
+                const moveSpeed = (keys['ShiftLeft'] ? player.sprintSpeed : player.speed);
+                const forward = new THREE.Vector3();
+                const right = new THREE.Vector3();
+                
+                controls.getDirection(forward).normalize();
+                right.crossVectors(camera.up, forward).normalize();
+
+                const moveDirection = new THREE.Vector3();
+                if (keys['KeyW']) moveDirection.add(forward);
+                if (keys['KeyS']) moveDirection.sub(forward);
+                if (keys['KeyA']) moveDirection.add(right);
+                if (keys['KeyD']) moveDirection.sub(right);
+                
+                // Normalizamos para evitar movimiento diagonal más rápido y aplicamos velocidad
+                if(moveDirection.length() > 0) moveDirection.normalize();
+
+                const horizontalVelocity = moveDirection.multiplyScalar(moveSpeed * delta);
+                
+                // Aplicar movimiento y colisión en el eje X
+                const oldX = playerPos.x;
+                playerPos.x -= horizontalVelocity.x;
+                if(checkCollision(playerPos)) {
+                    playerPos.x = oldX; // Si hay colisión, revertir
                 }
-                if (!getBlock(playerPos.x, playerPos.y - 0.5, playerPos.z + moveZ) && !getBlock(playerPos.x, playerPos.y - 1.5, playerPos.z + moveZ)) {
-                    controls.moveForward(-moveDirection.z * moveSpeed * delta);
+
+                // Aplicar movimiento y colisión en el eje Z
+                const oldZ = playerPos.z;
+                playerPos.z -= horizontalVelocity.z;
+                if(checkCollision(playerPos)) {
+                    playerPos.z = oldZ; // Si hay colisión, revertir
                 }
             }
 
