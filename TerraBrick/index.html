@@ -2,279 +2,127 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TerraBrick</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; }
-        canvas { display: block; }
-        #instructions {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            text-align: center;
+        /* Estilos generales */
+        body {
+            margin: 0;
+            background-image: url('https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/img/bg-texture.png');
+            background-size: 64px;
+            image-rendering: pixelated; /* Mantiene el aspecto de píxeles al escalar la imagen */
+            font-family: 'Press Start 2P', cursive;
             color: white;
-            text-shadow: 2px 2px 4px #000000;
-            font-family: Arial, sans-serif;
-            font-size: 20px;
-            z-index: 100;
+            overflow: hidden; /* Evita barras de scroll */
         }
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 4px;
-            height: 4px;
-            background-color: white;
-            border: 1px solid black;
-            transform: translate(-50%, -50%);
+
+        /* Contenedor principal para centrar todo */
+        .minecraft-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
         }
+
+        /* Título principal "MINECRAFT" */
+        .title {
+            font-size: 5vw; /* Se ajusta al tamaño de la pantalla */
+            letter-spacing: 0.2em;
+            text-shadow: 4px 4px 0px #3a3a3a; /* Sombra clásica */
+            margin-bottom: 30px;
+        }
+
+        /* Imagen que va a girar */
+        .rotating-block {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 40px;
+            /* Aplicamos la animación 'spin' */
+            animation: spin 6s linear infinite;
+        }
+
+        /* Definición de la animación de giro */
+        @keyframes spin {
+            from {
+                transform: rotateY(0deg); /* Empieza sin rotación */
+            }
+            to {
+                transform: rotateY(360deg); /* Termina con una vuelta completa */
+            }
+        }
+        
+        /* Contenedor para los botones */
+        .button-container {
+            width: 320px;
+            max-width: 90%;
+        }
+
+        /* Estilo de los botones de Minecraft */
+        .minecraft-btn {
+            display: block; /* Para que cada botón ocupe una línea */
+            width: 100%;
+            padding: 15px 0;
+            margin-bottom: 10px;
+            
+            background-color: #7d7d7d;
+            border: 3px solid;
+            /* El truco para el efecto 3D: bordes claros arriba/izquierda y oscuros abajo/derecha */
+            border-color: #c7c7c7 #5a5a5a #5a5a5a #c7c7c7;
+            box-shadow: inset 0px 0px 0px 2px #000000; /* Borde interior negro */
+            
+            color: white;
+            text-shadow: 2px 2px 0px #3a3a3a;
+            text-decoration: none; /* Quita el subrayado de los enlaces */
+            font-size: 16px;
+            cursor: pointer; /* Cambia el cursor a una manita */
+        }
+
+        /* Efecto al pasar el ratón por encima */
+        .minecraft-btn:hover {
+            background-color: #8f8f8f;
+        }
+        
+        /* Efecto al hacer clic (botón presionado) */
+        .minecraft-btn:active {
+            background-color: #707070;
+            /* Se invierten los colores del borde para que parezca hundido */
+            border-color: #5a5a5a #c7c7c7 #c7c7c7 #5a5a5a;
+            transform: translateY(2px); /* Mueve el botón un poco hacia abajo */
+        }
+
     </style>
 </head>
 <body>
-    <div id="instructions">
-        Haz clic para empezar<br/>
-        W, A, S, D = Moverse | Espacio = Saltar | Shift = Correr<br/>
-        Clic Izquierdo = Destruir | Clic Derecho = Colocar<br/>
-        Teclas 1 y 2 = Cambiar tipo de bloque
+
+    <div class="minecraft-container">
+        
+        <h1 class="title">TerraBrick</h1>
+        
+        <!-- Imagen que gira. Puedes cambiar el 'src' por la URL de otra imagen -->
+        <img src="https://LuLaLi20.IpodCraft.com/TerraBrick/images/background.webp" class="rotating-block" alt="Fondo girando">
+        
+        <div class="button-container">
+
+            <a href="https://LuLaLi20.IpodCraft.com/TerraBrick/versions/index" target="_blank" class="minecraft-btn">
+                Jugar
+            </a>
+
+            <a href="https://discord.gg/3J6rmnzMGT/" target="_blank" class="minecraft-btn">
+                Soporte
+            </a>
+            
+            <!-- Aquí puedes poner tu red social o página web -->
+            <a href="https://LuLaLi20.IpodCraft.com" target="_blank" class="minecraft-btn">
+                LuLaLi20
+            </a>
+        </div>
+        
     </div>
-    <div id="crosshair"></div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-
-        // ... (LAS SECCIONES 1, 2 y 3 SON IDÉNTICAS, NO HAY CAMBIOS AHÍ)
-        // ======================================================
-        // 1. CONFIGURACIÓN BÁSICA Y DE LA ESCENA
-        // ======================================================
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb); // Cielo
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; // Activar sombras
-        document.body.appendChild(renderer.domElement);
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(50, 50, 50);
-        directionalLight.castShadow = true;
-        scene.add(directionalLight);
-        
-        // ======================================================
-        // 2. TEXTURAS Y MATERIALES DE BLOQUES
-        // ======================================================
-        const textureLoader = new THREE.TextureLoader();
-        const dirtTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png');
-        const grassTopTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png');
-        const grassSideTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png');
-        [dirtTexture, grassTopTexture, grassSideTexture].forEach(t => {
-            t.magFilter = THREE.NearestFilter;
-            t.minFilter = THREE.NearestFilter;
-        });
-        const grassBlockMaterial = [
-            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
-            new THREE.MeshLambertMaterial({ map: grassTopTexture }),  new THREE.MeshLambertMaterial({ map: dirtTexture }),
-            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
-        ];
-        const dirtBlockMaterial = new THREE.MeshLambertMaterial({ map: dirtTexture });
-        const blockTypes = { 'grass': grassBlockMaterial, 'dirt': dirtBlockMaterial };
-        let currentBlockType = 'grass';
-
-        // ======================================================
-        // 3. GENERACIÓN DEL MUNDO Y MANEJO DE DATOS
-        // ======================================================
-        const world = new Map();
-        const cubes = [];
-        const worldSize = 32;
-        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-        for (let x = -worldSize / 2; x < worldSize / 2; x++) {
-            for (let z = -worldSize / 2; z < worldSize / 2; z++) {
-                const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5);
-                for (let y = 0; y < height; y++) {
-                    const blockType = (y === height - 1) ? 'grass' : 'dirt';
-                    createBlock(x, y, z, blockType);
-                }
-            }
-        }
-        function createBlock(x, y, z, type) {
-            const material = blockTypes[type];
-            const cube = new THREE.Mesh(cubeGeometry, material);
-            cube.position.set(x, y, z);
-            cube.castShadow = true;
-            cube.receiveShadow = true;
-            scene.add(cube);
-            cubes.push(cube);
-            world.set(`${x},${y},${z}`, { type, cube });
-        }
-        function getBlock(x, y, z) {
-            return world.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
-        }
-
-        // ======================================================
-        // 4. CONTROLES Y FÍSICA DEL JUGADOR
-        // ======================================================
-        const controls = new PointerLockControls(camera, document.body);
-        const instructions = document.getElementById('instructions');
-        document.body.addEventListener('click', () => { controls.lock(); });
-        controls.addEventListener('lock', () => instructions.style.display = 'none');
-        controls.addEventListener('unlock', () => instructions.style.display = '');
-
-        const velocity = new THREE.Vector3();
-        const keys = {};
-        const player = {
-            height: 1.8,
-            width: 0.4, // Ancho del jugador para colisiones
-            speed: 5.0,
-            sprintSpeed: 10.0,
-            jumpHeight: 8.0,
-            onGround: false
-        };
-        camera.position.set(0, 15, 0);
-
-        document.addEventListener('keydown', (e) => keys[e.code] = true);
-        document.addEventListener('keyup', (e) => keys[e.code] = false);
-
-        // ======================================================
-        // 5. INTERACCIÓN (ROMPER Y PONER BLOQUES)
-        // ======================================================
-        const raycaster = new THREE.Raycaster();
-        const pointer = new THREE.Vector2(0, 0);
-        document.addEventListener('mousedown', (event) => {
-            if (!controls.isLocked) return;
-            raycaster.setFromCamera(pointer, camera);
-            const intersects = raycaster.intersectObjects(cubes);
-            if (intersects.length > 0) {
-                const intersection = intersects[0];
-                if (intersection.distance > 6) return;
-                const pos = intersection.object.position;
-                const key = `${pos.x},${pos.y},${pos.z}`;
-                if (event.button === 0) { // Clic izquierdo: destruir
-                    if (world.has(key)) {
-                        scene.remove(world.get(key).cube);
-                        cubes.splice(cubes.indexOf(world.get(key).cube), 1);
-                        world.delete(key);
-                    }
-                } else if (event.button === 2) { // Clic derecho: colocar
-                    const newPos = pos.clone().add(intersection.face.normal);
-                    const playerPos = controls.getObject().position;
-                    if (Math.floor(newPos.x) === Math.floor(playerPos.x) &&
-                        Math.floor(newPos.y) === Math.floor(playerPos.y) &&
-                        Math.floor(newPos.z) === Math.floor(playerPos.z)) {
-                        return;
-                    }
-                    createBlock(newPos.x, newPos.y, newPos.z, currentBlockType);
-                }
-            }
-        });
-        document.addEventListener('contextmenu', (e) => e.preventDefault());
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Digit1') currentBlockType = 'grass';
-            if (e.code === 'Digit2') currentBlockType = 'dirt';
-        });
-
-        // ======================================================
-        // 6. BUCLE DE ANIMACIÓN Y FÍSICA (VERSIÓN MEJORADA)
-        // ======================================================
-        let lastTime = performance.now();
-
-        function checkCollision(pos) {
-            // Comprueba colisiones en las esquinas de la hitbox del jugador (a la altura de los pies y la cabeza)
-            for (let i = 0; i < 2; i++) {
-                const y = pos.y - (i * player.height); // Comprobar a la altura de los pies y un poco más abajo
-                if (getBlock(pos.x - player.width, y, pos.z - player.width) ||
-                    getBlock(pos.x + player.width, y, pos.z - player.width) ||
-                    getBlock(pos.x - player.width, y, pos.z + player.width) ||
-                    getBlock(pos.x + player.width, y, pos.z + player.width)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const time = performance.now();
-            const delta = (time - lastTime) / 1000;
-
-            if (controls.isLocked) {
-                const playerPos = controls.getObject().position;
-
-                // --- FÍSICA VERTICAL (GRAVEDAD Y SALTO) ---
-                const groundCheckPos = playerPos.clone();
-                groundCheckPos.y -= player.height;
-                player.onGround = checkCollision(groundCheckPos);
-
-                if (player.onGround) {
-                    velocity.y = Math.max(0, velocity.y);
-                }
-
-                if (keys['Space'] && player.onGround) {
-                    velocity.y = player.jumpHeight;
-                }
-
-                // Colisión con el techo
-                const headCheckPos = playerPos.clone();
-                headCheckPos.y += 0.2; // Un poco por encima de la cámara
-                if (velocity.y > 0 && getBlock(headCheckPos.x, headCheckPos.y, headCheckPos.z)) {
-                    velocity.y = 0;
-                }
-                
-                playerPos.y += velocity.y * delta;
-                velocity.y -= 25 * delta; // Gravedad constante
-
-                // --- MOVIMIENTO HORIZONTAL CON COLISIÓN MEJORADA ---
-                const moveSpeed = (keys['ShiftLeft'] ? player.sprintSpeed : player.speed);
-                const forward = new THREE.Vector3();
-                const right = new THREE.Vector3();
-                
-                controls.getDirection(forward).normalize();
-                right.crossVectors(camera.up, forward).normalize();
-
-                const moveDirection = new THREE.Vector3();
-                if (keys['KeyW']) moveDirection.add(forward);
-                if (keys['KeyS']) moveDirection.sub(forward);
-                if (keys['KeyA']) moveDirection.add(right);
-                if (keys['KeyD']) moveDirection.sub(right);
-                
-                // Normalizamos para evitar movimiento diagonal más rápido y aplicamos velocidad
-                if(moveDirection.length() > 0) moveDirection.normalize();
-
-                const horizontalVelocity = moveDirection.multiplyScalar(moveSpeed * delta);
-                
-                // Aplicar movimiento y colisión en el eje X
-                const oldX = playerPos.x;
-                playerPos.x -= horizontalVelocity.x;
-                if(checkCollision(playerPos)) {
-                    playerPos.x = oldX; // Si hay colisión, revertir
-                }
-
-                // Aplicar movimiento y colisión en el eje Z
-                const oldZ = playerPos.z;
-                playerPos.z -= horizontalVelocity.z;
-                if(checkCollision(playerPos)) {
-                    playerPos.z = oldZ; // Si hay colisión, revertir
-                }
-            }
-
-            lastTime = time;
-            renderer.render(scene, camera);
-        }
-        
-        animate();
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
 </body>
 </html>
