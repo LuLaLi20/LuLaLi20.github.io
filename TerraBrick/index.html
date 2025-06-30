@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TerraBrick</title>
+    <title>Minecraft - Menú Principal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -11,16 +11,36 @@
         /* Estilos generales */
         body {
             margin: 0;
-            background-image: url('https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/img/bg-texture.png');
-            background-size: 64px;
-            image-rendering: pixelated; /* Mantiene el aspecto de píxeles al escalar la imagen */
+            padding: 0;
             font-family: 'Press Start 2P', cursive;
             color: white;
-            overflow: hidden; /* Evita barras de scroll */
+            overflow: hidden; /* Oculta las barras de scroll */
         }
 
-        /* Contenedor principal para centrar todo */
-        .minecraft-container {
+        /* Contenedor para el fondo con movimiento */
+        .menu-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://https://lulali20.ipodcraft.com/TerraBrick/images/background.webp'); /* Panorama de Minecraft */
+            background-size: cover;
+            background-position: center;
+            /* Animación para el paneo lento */
+            animation: pan-background 40s linear infinite;
+            z-index: -1; /* Lo pone detrás de todo el contenido */
+        }
+
+        /* Definición de la animación de paneo */
+        @keyframes pan-background {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Contenedor principal para centrar el contenido del menú */
+        .menu-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -29,82 +49,100 @@
             text-align: center;
         }
 
-        /* Título principal "MINECRAFT" */
-        .title {
-            font-size: 5vw; /* Se ajusta al tamaño de la pantalla */
-            letter-spacing: 0.2em;
-            text-shadow: 4px 4px 0px #3a3a3a; /* Sombra clásica */
-            margin-bottom: 30px;
+        /* Contenedor para el logo y el texto amarillo */
+        .logo-container {
+            position: relative;
+            margin-bottom: 50px;
         }
 
-        /* Imagen que va a girar */
-        .rotating-block {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 40px;
-            /* Aplicamos la animación 'spin' */
-            animation: spin 6s linear infinite;
+        /* El logo oficial de Minecraft */
+        .logo {
+            width: 500px;
+            max-width: 80%;
         }
 
-        /* Definición de la animación de giro */
-        @keyframes spin {
-            from {
-                transform: rotateY(0deg); /* Empieza sin rotación */
-            }
-            to {
-                transform: rotateY(360deg); /* Termina con una vuelta completa */
-            }
+        /* El texto amarillo "splash" */
+        .splash-text {
+            position: absolute;
+            top: 60%;
+            right: -20px;
+            font-size: 1.5vw;
+            color: #FFFF00;
+            text-shadow: 3px 3px 0px #3f3f00; /* Sombra más oscura */
+            transform: rotate(-20deg);
+            animation: splash-pulse 2s ease-in-out infinite;
         }
-        
-        /* Contenedor para los botones */
+
+        /* Animación para el texto amarillo */
+        @keyframes splash-pulse {
+            0% { transform: scale(1) rotate(-20deg); }
+            50% { transform: scale(1.1) rotate(-20deg); }
+            100% { transform: scale(1) rotate(-20deg); }
+        }
+
+        /* Contenedor de botones */
         .button-container {
             width: 320px;
-            max-width: 90%;
+            max-width: 85%;
         }
 
-        /* Estilo de los botones de Minecraft */
+        /* Botones estilo Minecraft (más fieles al original) */
         .minecraft-btn {
-            display: block; /* Para que cada botón ocupe una línea */
+            display: block;
             width: 100%;
-            padding: 15px 0;
-            margin-bottom: 10px;
+            padding: 12px 0;
+            margin-bottom: 8px;
             
-            background-color: #7d7d7d;
-            border: 3px solid;
-            /* El truco para el efecto 3D: bordes claros arriba/izquierda y oscuros abajo/derecha */
-            border-color: #c7c7c7 #5a5a5a #5a5a5a #c7c7c7;
-            box-shadow: inset 0px 0px 0px 2px #000000; /* Borde interior negro */
+            background-image: url('https://LuLaLi20.IpodCraft.com/TerraBrick/images/empty_button.webp'); /* Textura de botón de Minecraft */
+            background-size: cover;
+            background-color: rgba(125, 125, 125, 0.8);
+            border: 2px solid #000000;
             
             color: white;
-            text-shadow: 2px 2px 0px #3a3a3a;
-            text-decoration: none; /* Quita el subrayado de los enlaces */
+            text-shadow: 2px 2px #3f3f3f;
+            text-decoration: none;
             font-size: 16px;
-            cursor: pointer; /* Cambia el cursor a una manita */
+            cursor: pointer;
+            
+            image-rendering: pixelated; /* Mantiene la textura pixelada */
+            transition: all 0.1s ease-in-out;
         }
 
-        /* Efecto al pasar el ratón por encima */
+        /* Efecto al pasar el ratón */
         .minecraft-btn:hover {
-            background-color: #8f8f8f;
-        }
-        
-        /* Efecto al hacer clic (botón presionado) */
-        .minecraft-btn:active {
-            background-color: #707070;
-            /* Se invierten los colores del borde para que parezca hundido */
-            border-color: #5a5a5a #c7c7c7 #c7c7c7 #5a5a5a;
-            transform: translateY(2px); /* Mueve el botón un poco hacia abajo */
+            background-color: rgba(160, 160, 160, 0.9);
+            color: #FFFFA0; /* El texto se pone amarillo claro */
+            box-shadow: 0 0 8px 2px #FFFFA0;
         }
 
+        /* Footer con información */
+        footer {
+            position: fixed;
+            bottom: 5px;
+            width: 100%;
+            padding: 0 10px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            text-shadow: 2px 2px #3f3f3f;
+        }
     </style>
 </head>
 <body>
 
-    <div class="minecraft-container">
+    <!-- Fondo con movimiento -->
+    <div class="menu-background"></div>
+
+    <!-- Contenido principal del menú -->
+    <div class="menu-container">
         
-        <h1 class="title">TerraBrick</h1>
-        
-        <!-- Imagen que gira. Puedes cambiar el 'src' por la URL de otra imagen -->
-        <img src="https://LuLaLi20.IpodCraft.com/TerraBrick/images/background.webp" class="rotating-block" alt="Fondo girando">
+        <div class="logo-container">
+            <!-- Imagen del logo oficial -->
+            <img src="https://LuLaLi20.Ipodcraft.com/TerraBrick/images/tittle.webp" alt="TerraBrick Logo" class="logo">
+            <!-- Texto amarillo inclinado -->
+            <span class="splash-text">By LuLaLi20!!!</span>
+        </div>
         
         <div class="button-container">
 
@@ -112,17 +150,22 @@
                 Jugar
             </a>
 
-            <a href="https://discord.gg/3J6rmnzMGT/" target="_blank" class="minecraft-btn">
+            <a href="https://discord.gg/3J6rmnzMGT" target="_blank" class="minecraft-btn">
                 Soporte
             </a>
             
-            <!-- Aquí puedes poner tu red social o página web -->
             <a href="https://LuLaLi20.IpodCraft.com" target="_blank" class="minecraft-btn">
                 LuLaLi20
             </a>
         </div>
         
     </div>
+
+    <!-- Texto de las esquinas inferiores -->
+    <footer>
+        <span class="footer-left">TerraBrick</span>
+        <span class="footer-right">Copyright LuLaLi20.</span>
+    </footer>
 
 </body>
 </html>
