@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TerraBrick - 1.0.26</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            z-index: 100;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border: 1px solid black;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        Haz clic para empezar<br/>
+        W, A, S, D = Moverse | Espacio = Saltar | Shift = Correr<br/>
+        Clic Izquierdo = Destruir | Clic Derecho = Colocar<br/>
+        Teclas 1, 2, 3 = Cambiar tipo de bloque
+    </div>
+    <div id="crosshair"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        // ... (Secciones 1, 2, 3 sin cambios) ...
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(50, 50, 50);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+        
+        const textureLoader = new THREE.TextureLoader();
+        const dirtTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png');
+        const grassTopTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png');
+        const grassSideTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png');
+        const bedrockTexture = textureLoader.load('https://i.imgur.com/h2S2z9w.png');
+        [dirtTexture, grassTopTexture, grassSideTexture, bedrockTexture].forEach(t => { t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; });
+        const grassBlockMaterial = [
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
+            new THREE.MeshLambertMaterial({ map: grassTopTexture }),  new THREE.MeshLambertMaterial({ map: dirtTexture }),
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
+        ];
+        const dirtBlockMaterial = new THREE.MeshLambertMaterial({ map: dirtTexture });
+        const bedrockBlockMaterial = new THREE.MeshLambertMaterial({ map: bedrockTexture });
+        const blockTypes = { 'grass': grassBlockMaterial, 'dirt': dirtBlockMaterial, 'bedrock': bedrockBlockMaterial };
+        let currentBlockType = 'grass';
+
+        const world = new Map();
+        const cubes = [];
+        const worldSize = 32;
+        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        for (let x = -worldSize / 2; x < worldSize / 2; x++) {
+            for (let z = -worldSize / 2; z < worldSize / 2; z++) {
+                createBlock(x, -1, z, 'bedrock');
+                const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5);
+                for (let y = 0; y < height; y++) {
+                    const blockType = (y === height - 1) ? 'grass' : 'dirt';
+                    createBlock(x, y, z, blockType);
+                }
+            }
+        }
+        function createBlock(x, y, z, type) {
+            const material = blockTypes[type];
+            const cube = new THREE.Mesh(cubeGeometry, material);
+            cube.position.set(x, y, z);
+            cube.castShadow = true; cube.receiveShadow = true;
+            scene.add(cube);
+            cubes.push(cube);
+            const key = `${x},${y},${z}`;
+            cube.name = key;
+            const blockBox = new THREE.Box3().setFromObject(cube);
+            world.set(key, { type, cube, box: blockBox });
+        }
+        function getBlock(x, y, z) {
+            return world.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
+        }
+
+        const controls = new PointerLockControls(camera, document.body);
+        const instructions = document.getElementById('instructions');
+        document.body.addEventListener('click', () => { controls.lock(); });
+        controls.addEventListener('lock', () => instructions.style.display = 'none');
+        controls.addEventListener('unlock', () => instructions.style.display = '');
+        const velocity = new THREE.Vector3();
+        const keys = {};
+        const player = {
+            height: 2.0, width: 0.8, // Ancho de casi 1 bloque (0.4 a cada lado)
+            speed: 5.0, sprintSpeed: 10.0, jumpHeight: 8.0,
+            onGround: false, box: new THREE.Box3()
+        };
+        controls.getObject().position.set(0, 15, 0);
+        document.addEventListener('keydown', (e) => keys[e.code] = true);
+        document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        // ... (Sección 5, Interacción, sin cambios) ...
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2(0, 0);
+        document.addEventListener('mousedown', (event) => {
+            if (!controls.isLocked) return;
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObjects(cubes);
+            if (intersects.length > 0) {
+                const intersection = intersects[0];
+                if (intersection.distance > 6) return;
+                const pos = intersection.object.position;
+                const key = `${pos.x},${pos.y},${pos.z}`;
+                const blockData = world.get(key);
+                if (event.button === 0) {
+                    if (blockData && blockData.type === 'bedrock') { return; }
+                    if (world.has(key)) { scene.remove(world.get(key).cube); cubes.splice(cubes.indexOf(world.get(key).cube), 1); world.delete(key); }
+                } else if (event.button === 2) {
+                    const newPos = pos.clone().add(intersection.face.normal);
+                    const playerPos = controls.getObject().position;
+                    const playerFeetPos = playerPos.y - player.height;
+                    if ((Math.floor(newPos.x) === Math.floor(playerPos.x) && Math.floor(newPos.z) === Math.floor(playerPos.z)) && 
+                        (Math.floor(newPos.y) === Math.floor(playerFeetPos) || Math.floor(newPos.y) === Math.floor(playerFeetPos + 1))) { return; }
+                    createBlock(newPos.x, newPos.y, newPos.z, currentBlockType);
+                }
+            }
+        });
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Digit1') currentBlockType = 'grass';
+            if (e.code === 'Digit2') currentBlockType = 'dirt';
+            if (e.code === 'Digit3') currentBlockType = 'bedrock';
+        });
+
+        // ======================================================
+        // 6. BUCLE DE ANIMACIÓN Y FÍSICA (VERSIÓN CON SNAPPING)
+        // ======================================================
+        let lastTime = performance.now();
+        
+        function updatePlayerBox(position) {
+            // La caja del jugador va desde sus pies hasta sus ojos (cámara)
+            player.box.min.set(position.x - player.width / 2, position.y - player.height, position.z - player.width / 2);
+            player.box.max.set(position.x + player.width / 2, position.y, position.z + player.width / 2);
+        }
+
+        function getCollidingBlocks(position) {
+            updatePlayerBox(position);
+            const collidingBlocks = [];
+            for (const block of world.values()) {
+                if (player.box.intersectsBox(block.box)) {
+                    collidingBlocks.push(block);
+                }
+            }
+            return collidingBlocks;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now();
+            const delta = Math.min(0.1, (time - lastTime) / 1000); // Evitar saltos grandes de tiempo
+            const playerPos = controls.getObject().position;
+
+            if (controls.isLocked) {
+                // --- MOVIMIENTO HORIZONTAL (X y Z) ---
+                const moveSpeed = (keys['ShiftLeft'] ? player.sprintSpeed : player.speed);
+                const forward = new THREE.Vector3(); const right = new THREE.Vector3();
+                controls.getDirection(forward); forward.y = 0; forward.normalize();
+                right.crossVectors(camera.up, forward).normalize();
+                
+                const moveDirection = new THREE.Vector3();
+                if (keys['KeyW']) moveDirection.add(forward);
+                if (keys['KeyS']) moveDirection.sub(forward);
+                if (keys['KeyA']) moveDirection.sub(right);
+                if (keys['KeyD']) moveDirection.add(right);
+                if (moveDirection.length() > 0) moveDirection.normalize();
+
+                velocity.x = moveDirection.x * moveSpeed;
+                velocity.z = moveDirection.z * moveSpeed;
+
+                // Aplicar movimiento y colisión en X
+                playerPos.x += velocity.x * delta;
+                let colliding = getCollidingBlocks(playerPos);
+                if (colliding.length > 0) {
+                    // AJUSTE (SNAPPING): Pegar al jugador a la superficie del bloque
+                    playerPos.x = velocity.x > 0 ? colliding[0].box.min.x - player.width / 2 - 0.001 : colliding[0].box.max.x + player.width / 2 + 0.001;
+                }
+
+                // Aplicar movimiento y colisión en Z
+                playerPos.z += velocity.z * delta;
+                colliding = getCollidingBlocks(playerPos);
+                if (colliding.length > 0) {
+                    playerPos.z = velocity.z > 0 ? colliding[0].box.min.z - player.width / 2 - 0.001 : colliding[0].box.max.z + player.width / 2 + 0.001;
+                }
+
+                // --- FÍSICA VERTICAL (GRAVEDAD Y SALTO) ---
+                velocity.y -= 25 * delta; // Aplicar gravedad
+                playerPos.y += velocity.y * delta;
+                colliding = getCollidingBlocks(playerPos);
+                
+                player.onGround = false;
+                if (colliding.length > 0) {
+                    if (velocity.y < 0) { // Si está cayendo
+                        // AJUSTE (SNAPPING): Pegar al jugador a la superficie de arriba del bloque
+                        playerPos.y = colliding[0].box.max.y + player.height;
+                        velocity.y = 0;
+                        player.onGround = true;
+                    } else if (velocity.y > 0) { // Si está subiendo (chocando cabeza)
+                        // AJUSTE (SNAPPING): Pegar al jugador a la superficie de abajo del bloque
+                        playerPos.y = colliding[0].box.min.y;
+                        velocity.y = 0;
+                    }
+                }
+
+                if (keys['Space'] && player.onGround) {
+                    velocity.y = player.jumpHeight;
+                }
+
+                // Respawn si el jugador cae fuera del mundo
+                if (playerPos.y < -20) {
+                    playerPos.set(0, 15, 0);
+                    velocity.set(0, 0, 0);
+                }
+            }
+
+            lastTime = time;
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
