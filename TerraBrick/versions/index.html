@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TerraBrick Launcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos generales */
+        body {
+            margin: 0;
+            padding: 0;
+            /* Fondo oscuro texturizado, típico de los menús de configuración */
+            background-image: url('https://lulali20.ipodcraft.com/TerraBrick/images/background.webp');
+            background-repeat: repeat;
+            image-rendering: pixelated;
+            font-family: 'Press Start 2P', cursive;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* Contenedor principal que simula la ventana de configuración */
+        .world-settings-container {
+            width: 500px;
+            max-width: 90%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Título de la pantalla */
+        .title {
+            font-size: 24px;
+            text-shadow: 2px 2px #3f3f3f;
+            margin-bottom: 40px;
+        }
+
+        /* Contenedor para cada opción de versión */
+        .setting-item {
+            margin-bottom: 25px;
+            text-align: left; /* Alineamos las etiquetas a la izquierda */
+        }
+        
+        .setting-item label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-shadow: 2px 2px #3f3f3f;
+        }
+
+        /* Reutilizamos el estilo de botón de la pantalla anterior */
+        .minecraft-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 0;
+            
+            background-image: url('https://LuLaLi20.IpodCraft.com/TerraBrick/images/empty_button.webp');
+            background-size: cover;
+            border: 2px solid #000000;
+            
+            color: white;
+            text-shadow: 2px 2px #3f3f3f;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            
+            image-rendering: pixelated;
+            transition: all 0.1s ease-in-out;
+            text-align: center; /* Centramos el texto del botón */
+            box-sizing: border-box; /* Para que el padding no afecte el width */
+        }
+        
+        .minecraft-btn:hover {
+            background-color: rgba(160, 160, 160, 0.9);
+            color: #FFFFA0;
+            box-shadow: 0 0 8px 2px #FFFFA0;
+        }
+        
+        /* Contenedor para los botones inferiores */
+        .bottom-buttons {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Espacio entre botones si hubiera más de uno */
+        }
+        
+        .bottom-buttons .minecraft-btn {
+            width: 200px; /* Hacemos el botón de 'Atrás' más pequeño */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="world-settings-container">
+        
+        <h1 class="title">Seleccionar Versión</h1>
+
+        <!-- Opción de Versión 1 -->
+        <div class="setting-item">
+            <label>Última versión estable:</label>
+            <a href="https://lulali20.ipodcraft.com/TerraBrick/versions/1.0.24" target="_blank" class="minecraft-btn">Jugar 1.0.24</a>
+        </div>
+
+        <div class="setting-item">
+            <label>La primera versión:</label>
+            <a href="https://www.minecraft.net/es-es/article/caves---cliffs--part-ii-out-today-java" target="_blank" class="minecraft-btn">Jugar 1.18.2</a>
+        </div>
+        
+        <div class="setting-item">
+            <label>Generación infinita:</label>
+            <a href="https://lulali20.ipodcraft.com/TerraBrick/versions/1.0.23" target="_blank" class="minecraft-btn">Jugar 1.8.9</a>
+        </div>
+
+
+        <!-- Botones de acción inferiores -->
+        <div class="bottom-buttons">
+            <!-- Este botón te llevará de vuelta al menú principal -->
+            <a href="https://LuLaLi20.IpodCraft.com/TerraBrick/index" class="minecraft-btn">Atrás</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
