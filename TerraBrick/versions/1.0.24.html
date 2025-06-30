@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TerraBrick - 1.0.24</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            z-index: 100;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border: 1px solid black;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        Haz clic para empezar<br/>
+        W, A, S, D = Moverse | Espacio = Saltar | Shift = Correr<br/>
+        Clic Izquierdo = Destruir | Clic Derecho = Colocar<br/>
+        Teclas 1 y 2 = Cambiar tipo de bloque
+    </div>
+    <div id="crosshair"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        // ======================================================
+        // 1. CONFIGURACIÓN BÁSICA Y DE LA ESCENA
+        // ======================================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(50, 50, 50);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+        
+        // ======================================================
+        // 2. TEXTURAS Y MATERIALES DE BLOQUES
+        // ======================================================
+        const textureLoader = new THREE.TextureLoader();
+        const dirtTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png');
+        const grassTopTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png');
+        const grassSideTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png');
+        // AÑADIDO: Textura para la bedrock
+        const bedrockTexture = textureLoader.load('https://i.imgur.com/h2S2z9w.png');
+
+        [dirtTexture, grassTopTexture, grassSideTexture, bedrockTexture].forEach(t => {
+            t.magFilter = THREE.NearestFilter;
+            t.minFilter = THREE.NearestFilter;
+        });
+
+        const grassBlockMaterial = [
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
+            new THREE.MeshLambertMaterial({ map: grassTopTexture }),  new THREE.MeshLambertMaterial({ map: dirtTexture }),
+            new THREE.MeshLambertMaterial({ map: grassSideTexture }), new THREE.MeshLambertMaterial({ map: grassSideTexture }),
+        ];
+        const dirtBlockMaterial = new THREE.MeshLambertMaterial({ map: dirtTexture });
+        // AÑADIDO: Material para la bedrock
+        const bedrockBlockMaterial = new THREE.MeshLambertMaterial({ map: bedrockTexture });
+        
+        const blockTypes = {
+            'grass': grassBlockMaterial,
+            'dirt': dirtBlockMaterial,
+            'bedrock': bedrockBlockMaterial // AÑADIDO: Tipo de bloque bedrock
+        };
+
+        let currentBlockType = 'grass';
+
+        // ======================================================
+        // 3. GENERACIÓN DEL MUNDO Y MANEJO DE DATOS
+        // ======================================================
+        const world = new Map();
+        const cubes = [];
+        const worldSize = 32;
+        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        for (let x = -worldSize / 2; x < worldSize / 2; x++) {
+            for (let z = -worldSize / 2; z < worldSize / 2; z++) {
+                // AÑADIDO: Crear la capa de bedrock en y = -1
+                createBlock(x, -1, z, 'bedrock');
+
+                const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5);
+                for (let y = 0; y < height; y++) {
+                    const blockType = (y === height - 1) ? 'grass' : 'dirt';
+                    createBlock(x, y, z, blockType);
+                }
+            }
+        }
+        function createBlock(x, y, z, type) {
+            const material = blockTypes[type];
+            const cube = new THREE.Mesh(cubeGeometry, material);
+            cube.position.set(x, y, z);
+            cube.castShadow = true; cube.receiveShadow = true;
+            scene.add(cube);
+            cubes.push(cube);
+            const key = `${x},${y},${z}`;
+            cube.name = key;
+            const blockBox = new THREE.Box3().setFromObject(cube);
+            world.set(key, { type, cube, box: blockBox });
+        }
+        function getBlock(x, y, z) {
+            return world.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
+        }
+
+        // ======================================================
+        // 4. CONTROLES Y FÍSICA DEL JUGADOR
+        // ======================================================
+        const controls = new PointerLockControls(camera, document.body);
+        const instructions = document.getElementById('instructions');
+        document.body.addEventListener('click', () => { controls.lock(); });
+        controls.addEventListener('lock', () => instructions.style.display = 'none');
+        controls.addEventListener('unlock', () => instructions.style.display = '');
+        const velocity = new THREE.Vector3();
+        const keys = {};
+        const player = {
+            height: 2.0, width: 0.5, speed: 5.0,
+            sprintSpeed: 10.0, jumpHeight: 8.0,
+            onGround: false, box: new THREE.Box3()
+        };
+        controls.getObject().position.set(0, 15, 0);
+        document.addEventListener('keydown', (e) => keys[e.code] = true);
+        document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        // ======================================================
+        // 5. INTERACCIÓN (ROMPER Y PONER BLOQUES)
+        // ======================================================
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2(0, 0);
+        document.addEventListener('mousedown', (event) => {
+            if (!controls.isLocked) return;
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObjects(cubes);
+            if (intersects.length > 0) {
+                const intersection = intersects[0];
+                if (intersection.distance > 6) return;
+                const pos = intersection.object.position;
+                const key = `${pos.x},${pos.y},${pos.z}`;
+                
+                // AÑADIDO: Impedir que se rompa la bedrock
+                const blockData = world.get(key);
+                if (event.button === 0) { // Clic izquierdo para destruir
+                    if (blockData && blockData.type === 'bedrock') {
+                        return; // Si es bedrock, no hacer nada
+                    }
+                    if (world.has(key)) {
+                        scene.remove(world.get(key).cube);
+                        cubes.splice(cubes.indexOf(world.get(key).cube), 1);
+                        world.delete(key);
+                    }
+                } else if (event.button === 2) { // Clic derecho para colocar
+                    const newPos = pos.clone().add(intersection.face.normal);
+                    const playerPos = controls.getObject().position;
+                    if (Math.floor(newPos.x) === Math.floor(playerPos.x) &&
+                        Math.floor(newPos.y) === Math.floor(playerPos.y - 1) &&
+                        Math.floor(newPos.z) === Math.floor(playerPos.z)) { return; }
+                    createBlock(newPos.x, newPos.y, newPos.z, currentBlockType);
+                }
+            }
+        });
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Digit1') currentBlockType = 'grass';
+            if (e.code === 'Digit2') currentBlockType = 'dirt';
+        });
+
+        // ======================================================
+        // 6. BUCLE DE ANIMACIÓN Y FÍSICA
+        // ======================================================
+        let lastTime = performance.now();
+        function updatePlayerBox(position) {
+            player.box.min.set(position.x - player.width / 2, position.y - player.height, position.z - player.width / 2);
+            player.box.max.set(position.x + player.width / 2, position.y, position.z + player.width / 2);
+        }
+        function checkCollision() {
+            for (const block of world.values()) {
+                if (player.box.intersectsBox(block.box)) return true;
+            }
+            return false;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now();
+            const delta = (time - lastTime) / 1000;
+            const playerPos = controls.getObject().position;
+
+            if (controls.isLocked) {
+                // ... (Física vertical sin cambios) ...
+                updatePlayerBox(playerPos);
+                player.onGround = false;
+                const groundCheckPos = playerPos.clone();
+                groundCheckPos.y -= 0.05;
+                updatePlayerBox(groundCheckPos);
+                if (checkCollision()) { player.onGround = true; velocity.y = Math.max(0, velocity.y); }
+                if (keys['Space'] && player.onGround) { velocity.y = player.jumpHeight; }
+                const oldY = playerPos.y;
+                playerPos.y += velocity.y * delta;
+                updatePlayerBox(playerPos);
+                if (checkCollision()) { playerPos.y = oldY; velocity.y = 0; }
+                velocity.y -= 25 * delta;
+
+                // ... (Movimiento horizontal sin cambios) ...
+                const moveSpeed = (keys['ShiftLeft'] ? player.sprintSpeed : player.speed) * delta;
+                const forward = new THREE.Vector3(); const right = new THREE.Vector3();
+                controls.getDirection(forward); forward.y = 0; forward.normalize();
+                right.crossVectors(camera.up, forward).normalize();
+                const moveDirection = new THREE.Vector3();
+                if (keys['KeyW']) moveDirection.add(forward); if (keys['KeyS']) moveDirection.sub(forward);
+                if (keys['KeyA']) moveDirection.sub(right); if (keys['KeyD']) moveDirection.add(right);
+                if(moveDirection.length() > 0) moveDirection.normalize();
+                const oldPos = playerPos.clone();
+                playerPos.x += moveDirection.x * moveSpeed;
+                updatePlayerBox(playerPos);
+                if (checkCollision()) { playerPos.x = oldPos.x; }
+                playerPos.z += moveDirection.z * moveSpeed;
+                updatePlayerBox(playerPos);
+                if (checkCollision()) { playerPos.z = oldPos.z; }
+
+                // AÑADIDO: Respawn si el jugador cae fuera del mundo
+                if (playerPos.y < -20) {
+                    playerPos.set(0, 15, 0);
+                    velocity.set(0, 0, 0);
+                }
+            }
+
+            lastTime = time;
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
