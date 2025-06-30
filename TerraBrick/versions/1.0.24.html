@@ -72,11 +72,10 @@
         // 2. TEXTURAS Y MATERIALES DE BLOQUES
         // ======================================================
         const textureLoader = new THREE.TextureLoader();
-        const dirtTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png');
-        const grassTopTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png');
-        const grassSideTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png');
-        // AÑADIDO: Textura para la bedrock
-        const bedrockTexture = textureLoader.load('https://i.imgur.com/h2S2z9w.png');
+        const dirtTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png'); //Tierra
+        const grassTopTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png'); //Césped arriba
+        const grassSideTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png'); //Césped lado
+        const bedrockTexture = textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/bedrock.png'); //Bedrock
 
         [dirtTexture, grassTopTexture, grassSideTexture, bedrockTexture].forEach(t => {
             t.magFilter = THREE.NearestFilter;
