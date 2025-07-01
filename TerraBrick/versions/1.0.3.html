@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TerraBrick - 1.0.3</title>
+    <style>
+        body { margin: 0; background-color: #000; font-family: 'Minecraftia', Arial, sans-serif; }
+        canvas { display: block; }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            font-size: 20px;
+            z-index: 100;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border: 1px solid black;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+
+        /* === AÑADIDO: ESTILOS PARA LA HOTBAR Y LA UI DE CRAFTEO === */
+        #hotbar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid #555;
+            z-index: 101;
+        }
+        .slot {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #888;
+            margin: 2px;
+            background-size: cover;
+            image-rendering: pixelated; /* Mantiene el aspecto pixel-art */
+        }
+        .slot.selected {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        #crafting-ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #c6c6c6;
+            border: 4px solid #585858;
+            padding: 20px;
+            display: none; /* Oculto por defecto */
+            z-index: 200;
+            text-align: center;
+            color: #373737;
+        }
+        #crafting-ui h2 { margin-top: 0; }
+        .crafting-container { display: flex; align-items: center; justify-content: center; }
+        .crafting-grid { display: grid; grid-template-columns: repeat(3, 50px); gap: 5px; }
+        .crafting-arrow { font-size: 40px; margin: 0 20px; }
+        .crafting-slot, .output-slot {
+            width: 50px;
+            height: 50px;
+            background-color: #8b8b8b;
+            border: 2px inset #ddd;
+            background-size: cover;
+            image-rendering: pixelated;
+        }
+        #crafting-close-button {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #373737;
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        Haz clic para empezar<br/>
+        W, A, S, D = Moverse | Espacio = Saltar | Shift = Correr<br/>
+        Clic Izquierdo = Destruir | Clic Derecho = Colocar/Interactuar<br/>
+        Teclas 1-6 = Cambiar bloque | E = Cerrar crafteo
+    </div>
+    <div id="crosshair"></div>
+
+    <!-- AÑADIDO: Elementos HTML para la Hotbar y UI de Crafteo -->
+    <div id="hotbar"></div>
+    <div id="crafting-ui">
+        <span id="crafting-close-button">×</span>
+        <h2>Mesa de trabajo</h2>
+        <div class="crafting-container">
+            <div class="crafting-grid">
+                <!-- 9 slots para el crafteo -->
+                <div class="crafting-slot" id="crafting-in-0"></div><div class="crafting-slot" id="crafting-in-1"></div><div class="crafting-slot" id="crafting-in-2"></div>
+                <div class="crafting-slot" id="crafting-in-3"></div><div class="crafting-slot" id="crafting-in-4"></div><div class="crafting-slot" id="crafting-in-5"></div>
+                <div class="crafting-slot" id="crafting-in-6"></div><div class="crafting-slot" id="crafting-in-7"></div><div class="crafting-slot" id="crafting-in-8"></div>
+            </div>
+            <div class="crafting-arrow">→</div>
+            <div class="output-slot" id="crafting-out"></div>
+        </div>
+    </div>
+
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        // ======================================================
+        // 1. CONFIGURACIÓN BÁSICA Y DE LA ESCENA
+        // ======================================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(50, 50, 50);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+        
+        // ======================================================
+        // 2. TEXTURAS Y MATERIALES DE BLOQUES
+        // ======================================================
+        const textureLoader = new THREE.TextureLoader();
+        const textures = {
+            dirt: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png'),
+            grass_top: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png'),
+            grass_side: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png'),
+            bedrock: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/bedrock.png'),
+            oak_log: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_log.png'),
+            oak_log_top: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_log_top.png'),
+            oak_leaves: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_leaves.png'),
+            oak_planks: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_planks.png'),
+            crafting_table_top: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/crafting_table_top.png'),
+            crafting_table_side: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/crafting_table_side.png'),
+            crafting_table_front: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/crafting_table_front.png'),
+        };
+
+        for (const key in textures) {
+            textures[key].magFilter = THREE.NearestFilter;
+            textures[key].minFilter = THREE.NearestFilter;
+        }
+
+        const blockMaterials = {
+            'grass': [
+                new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_side }),
+                new THREE.MeshLambertMaterial({ map: textures.grass_top }),  new THREE.MeshLambertMaterial({ map: textures.dirt }),
+                new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_side }),
+            ],
+            'dirt': new THREE.MeshLambertMaterial({ map: textures.dirt }),
+            'bedrock': new THREE.MeshLambertMaterial({ map: textures.bedrock }),
+            // AÑADIDO: Materiales para los nuevos bloques
+            'oak_log': [
+                new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log }),
+                new THREE.MeshLambertMaterial({ map: textures.oak_log_top }), new THREE.MeshLambertMaterial({ map: textures.oak_log_top }),
+                new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log }),
+            ],
+            'oak_leaves': new THREE.MeshLambertMaterial({ map: textures.oak_leaves, transparent: true, opacity: 0.9 }),
+            'oak_planks': new THREE.MeshLambertMaterial({ map: textures.oak_planks }),
+            'crafting_table': [
+                new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }),
+                new THREE.MeshLambertMaterial({ map: textures.crafting_table_top }), new THREE.MeshLambertMaterial({ map: textures.oak_planks }), // Bottom
+                new THREE.MeshLambertMaterial({ map: textures.crafting_table_front }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }),
+            ]
+        };
+        
+        // AÑADIDO: Sistema de Hotbar e Inventario
+        const hotbarBlocks = ['grass', 'dirt', 'oak_log', 'oak_leaves', 'oak_planks', 'crafting_table'];
+        let currentBlockIndex = 0;
+        let currentBlockType = hotbarBlocks[currentBlockIndex];
+        const hotbarElement = document.getElementById('hotbar');
+
+        function updateHotbar() {
+            hotbarElement.innerHTML = '';
+            hotbarBlocks.forEach((blockType, index) => {
+                const slot = document.createElement('div');
+                slot.classList.add('slot');
+                if (index === currentBlockIndex) {
+                    slot.classList.add('selected');
+                }
+                const textureUrl = textures[blockType === 'grass' ? 'grass_top' : blockType === 'oak_log' ? 'oak_log' : blockType === 'crafting_table' ? 'crafting_table_top' : blockType]?.image.src;
+                if(textureUrl) slot.style.backgroundImage = `url(${textureUrl})`;
+                hotbarElement.appendChild(slot);
+            });
+            currentBlockType = hotbarBlocks[currentBlockIndex];
+        }
+
+        // ======================================================
+        // 3. GENERACIÓN DEL MUNDO Y MANEJO DE DATOS
+        // ======================================================
+        const world = new Map();
+        const cubes = [];
+        const worldSize = 32;
+        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+
+        for (let x = -worldSize / 2; x < worldSize / 2; x++) {
+            for (let z = -worldSize / 2; z < worldSize / 2; z++) {
+                createBlock(x, -1, z, 'bedrock');
+                const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5);
+                for (let y = 0; y < height; y++) {
+                    const blockType = (y === height - 1) ? 'grass' : 'dirt';
+                    createBlock(x, y, z, blockType);
+                }
+                // AÑADIDO: Generar árboles
+                if (Math.random() < 0.02) {
+                    const treeHeight = Math.floor(Math.random() * 3) + 4;
+                    const groundY = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5) -1;
+                    createTree(x, groundY, z, treeHeight);
+                }
+            }
+        }
+
+        function createTree(x, y, z, height) {
+            for (let i = 1; i <= height; i++) {
+                createBlock(x, y + i, z, 'oak_log');
+            }
+            const canopyY = y + height;
+            for (let lx = -2; lx <= 2; lx++) {
+                for (let lz = -2; lz <= 2; lz++) {
+                    for (let ly = 0; ly <= 1; ly++) {
+                         if (Math.abs(lx) === 2 && Math.abs(lz) === 2) continue;
+                         if (getBlock(x + lx, canopyY + ly, z + lz)) continue; // No sobreescribir bloques
+                         createBlock(x + lx, canopyY + ly, z + lz, 'oak_leaves');
+                    }
+                }
+            }
+        }
+
+        function createBlock(x, y, z, type) {
+            const key = `${x},${y},${z}`;
+            if (world.has(key)) return; // No crear bloque si ya existe
+            const material = blockMaterials[type];
+            const cube = new THREE.Mesh(cubeGeometry, material);
+            cube.position.set(x, y, z);
+            cube.castShadow = true; cube.receiveShadow = true;
+            scene.add(cube);
+            cubes.push(cube);
+            cube.name = key;
+            const blockBox = new THREE.Box3().setFromObject(cube);
+            world.set(key, { type, cube, box: blockBox });
+        }
+        function getBlock(x, y, z) {
+            return world.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
+        }
+
+        // ======================================================
+        // 4. CONTROLES Y FÍSICA DEL JUGADOR
+        // ======================================================
+        const controls = new PointerLockControls(camera, document.body);
+        const instructions = document.getElementById('instructions');
+        let isCraftingUIOpen = false;
+        document.body.addEventListener('click', () => { 
+            if (!isCraftingUIOpen) controls.lock(); 
+        });
+        controls.addEventListener('lock', () => {
+            instructions.style.display = 'none';
+            document.getElementById('crosshair').style.display = 'block';
+        });
+        controls.addEventListener('unlock', () => {
+            if (!isCraftingUIOpen) instructions.style.display = '';
+            document.getElementById('crosshair').style.display = 'none';
+        });
+        const velocity = new THREE.Vector3();
+        const keys = {};
+        const player = {
+            height: 1.8, width: 0.5, speed: 5.0,
+            sprintSpeed: 10.0, jumpHeight: 8.0,
+            onGround: false, box: new THREE.Box3()
+        };
+        controls.getObject().position.set(0, 15, 0);
+        document.addEventListener('keydown', (e) => keys[e.code] = true);
+        document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        // ======================================================
+        // 5. INTERACCIÓN (ROMPER, PONER, CRAFTEAR)
+        // ======================================================
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2(0, 0);
+
+        document.addEventListener('mousedown', (event) => {
+            if (!controls.isLocked) return;
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObjects(cubes);
+            if (intersects.length > 0) {
+                const intersection = intersects[0];
+                if (intersection.distance > 6) return;
+                const pos = intersection.object.position;
+                const key = `${pos.x},${pos.y},${pos.z}`;
+                const blockData = world.get(key);
+                
+                if (event.button === 0) { // Clic izquierdo para destruir
+                    if (blockData && blockData.type === 'bedrock') return;
+                    if (world.has(key)) {
+                        scene.remove(world.get(key).cube);
+                        cubes.splice(cubes.indexOf(world.get(key).cube), 1);
+                        world.delete(key);
+                    }
+                } else if (event.button === 2) { // Clic derecho para colocar o interactuar
+                    // AÑADIDO: Interactuar con mesa de crafteo
+                    if (blockData && blockData.type === 'crafting_table') {
+                        openCraftingUI();
+                        return;
+                    }
+                    const newPos = pos.clone().add(intersection.face.normal);
+                    const playerBox = new THREE.Box3().setFromObject(controls.getObject());
+                    const newBlockBox = new THREE.Box3().setFromCenterAndSize(newPos.clone().add(new THREE.Vector3(0.5, 0.5, 0.5)), new THREE.Vector3(1,1,1));
+                    if (player.box.intersectsBox(newBlockBox)) return;
+                    
+                    createBlock(newPos.x, newPos.y, newPos.z, currentBlockType);
+                }
+            }
+        });
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+            if (e.code.startsWith('Digit')) {
+                const digit = parseInt(e.code.slice(5), 10);
+                if (digit > 0 && digit <= hotbarBlocks.length) {
+                    currentBlockIndex = digit - 1;
+                    updateHotbar();
+                }
+            }
+            // AÑADIDO: Cerrar UI de crafteo
+            if (e.code === 'KeyE' && isCraftingUIOpen) {
+                closeCraftingUI();
+            }
+        });
+        
+        // ======================================================
+        // 6. LÓGICA DE LA INTERFAZ DE CRAFTEO
+        // ======================================================
+        const craftingUI = document.getElementById('crafting-ui');
+        const craftingGridSlots = document.querySelectorAll('.crafting-slot');
+        const craftingOutputSlot = document.getElementById('crafting-out');
+        let craftingGrid = Array(9).fill(null);
+        
+        // Receta simple: 1 tronco -> 4 tablones
+        const recipes = {
+            'oak_log,,,,,,,,': { result: 'oak_planks', count: 4 }
+        };
+
+        function openCraftingUI() {
+            isCraftingUIOpen = true;
+            craftingUI.style.display = 'block';
+            controls.unlock();
+        }
+
+        function closeCraftingUI() {
+            isCraftingUIOpen = false;
+            craftingUI.style.display = 'none';
+            // Limpiar la mesa de crafteo al cerrar
+            craftingGrid.fill(null);
+            updateCraftingGridUI();
+            checkRecipes();
+        }
+        
+        document.getElementById('crafting-close-button').addEventListener('click', closeCraftingUI);
+        
+        craftingGridSlots.forEach((slot, index) => {
+            slot.addEventListener('click', () => {
+                // Lógica simple: clic para poner el bloque seleccionado
+                if (craftingGrid[index] === null) {
+                    craftingGrid[index] = 'oak_log'; // Demo: solo permite poner troncos
+                } else {
+                    craftingGrid[index] = null; // Clic de nuevo para quitar
+                }
+                updateCraftingGridUI();
+                checkRecipes();
+            });
+        });
+        
+        function updateCraftingGridUI() {
+            craftingGrid.forEach((item, index) => {
+                const slot = document.getElementById(`crafting-in-${index}`);
+                if (item) {
+                    slot.style.backgroundImage = `url(${textures[item].image.src})`;
+                } else {
+                    slot.style.backgroundImage = 'none';
+                }
+            });
+        }
+
+        function checkRecipes() {
+            const key = craftingGrid.join(',');
+            const recipe = recipes[key];
+            if (recipe) {
+                 craftingOutputSlot.style.backgroundImage = `url(${textures[recipe.result].image.src})`;
+            } else {
+                 craftingOutputSlot.style.backgroundImage = 'none';
+            }
+        }
+        
+        // ======================================================
+        // 7. BUCLE DE ANIMACIÓN Y FÍSICA
+        // ======================================================
+        let lastTime = performance.now();
+        function updatePlayerBox(position) {
+            player.box.min.set(position.x - player.width / 2, position.y - player.height, position.z - player.width / 2);
+            player.box.max.set(position.x + player.width / 2, position.y, position.z + player.width / 2);
+        }
+        function checkCollision() {
+            for (const block of world.values()) {
+                if (player.box.intersectsBox(block.box)) return true;
+            }
+            return false;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now();
+            const delta = (time - lastTime) / 1000;
+            const playerPos = controls.getObject().position;
+
+            if (controls.isLocked) {
+                updatePlayerBox(playerPos);
+                player.onGround = false;
+                const groundCheckPos = playerPos.clone();
+                groundCheckPos.y -= 0.05;
+                updatePlayerBox(groundCheckPos);
+                if (checkCollision()) { player.onGround = true; velocity.y = Math.max(0, velocity.y); }
+                if (keys['Space'] && player.onGround) { velocity.y = player.jumpHeight; }
+                const oldY = playerPos.y;
+                playerPos.y += velocity.y * delta;
+                updatePlayerBox(playerPos);
+                if (checkCollision()) { playerPos.y = oldY; velocity.y = 0; }
+                velocity.y -= 25 * delta;
+
+                // CORREGIDO: Movimiento horizontal
+                const moveSpeed = (keys['ShiftLeft'] ? player.sprintSpeed : player.speed) * delta;
+                const forward = new THREE.Vector3(); 
+                const right = new THREE.Vector3();
+                controls.getDirection(forward); 
+                forward.y = 0; 
+                forward.normalize();
+                right.crossVectors(forward, camera.up).normalize(); // Vector "derecha" corregido
+
+                const moveDirection = new THREE.Vector3();
+                if (keys['KeyW']) moveDirection.add(forward); 
+                if (keys['KeyS']) moveDirection.sub(forward);
+                if (keys['KeyA']) moveDirection.sub(right); // Ahora A va a la izquierda
+                if (keys['KeyD']) moveDirection.add(right); // Ahora D va a la derecha
+                
+                if(moveDirection.length() > 0) moveDirection.normalize();
+                const oldPos = playerPos.clone();
+                playerPos.x += moveDirection.x * moveSpeed;
+                updatePlayerBox(playerPos);
+                if (checkCollision()) { playerPos.x = oldPos.x; }
+                playerPos.z += moveDirection.z * moveSpeed;
+                updatePlayerBox(playerPos);
+                if (checkCollision()) { playerPos.z = oldPos.z; }
+
+                if (playerPos.y < -20) {
+                    playerPos.set(0, 15, 0);
+                    velocity.set(0, 0, 0);
+                }
+            }
+
+            lastTime = time;
+            renderer.render(scene, camera);
+        }
+        
+        // Iniciar todo
+        updateHotbar();
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
