@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TerraBrick - 1.0.3</title>
+    <title>TerraBrick - 1.1.0 (Corregido)</title>
     <style>
         body { margin: 0; background-color: #000; font-family: 'Minecraftia', Arial, sans-serif; }
         canvas { display: block; }
@@ -28,7 +28,7 @@
             z-index: 100;
         }
 
-        /* === AÑADIDO: ESTILOS PARA LA HOTBAR Y LA UI DE CRAFTEO === */
+        /* === ESTILOS PARA LA HOTBAR Y LA UI DE CRAFTEO === */
         #hotbar {
             position: absolute;
             bottom: 20px;
@@ -96,14 +96,12 @@
     </div>
     <div id="crosshair"></div>
 
-    <!-- AÑADIDO: Elementos HTML para la Hotbar y UI de Crafteo -->
     <div id="hotbar"></div>
     <div id="crafting-ui">
         <span id="crafting-close-button">×</span>
         <h2>Mesa de trabajo</h2>
         <div class="crafting-container">
             <div class="crafting-grid">
-                <!-- 9 slots para el crafteo -->
                 <div class="crafting-slot" id="crafting-in-0"></div><div class="crafting-slot" id="crafting-in-1"></div><div class="crafting-slot" id="crafting-in-2"></div>
                 <div class="crafting-slot" id="crafting-in-3"></div><div class="crafting-slot" id="crafting-in-4"></div><div class="crafting-slot" id="crafting-in-5"></div>
                 <div class="crafting-slot" id="crafting-in-6"></div><div class="crafting-slot" id="crafting-in-7"></div><div class="crafting-slot" id="crafting-in-8"></div>
@@ -175,7 +173,6 @@
             ],
             'dirt': new THREE.MeshLambertMaterial({ map: textures.dirt }),
             'bedrock': new THREE.MeshLambertMaterial({ map: textures.bedrock }),
-            // AÑADIDO: Materiales para los nuevos bloques
             'oak_log': [
                 new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log }),
                 new THREE.MeshLambertMaterial({ map: textures.oak_log_top }), new THREE.MeshLambertMaterial({ map: textures.oak_log_top }),
@@ -190,7 +187,6 @@
             ]
         };
         
-        // AÑADIDO: Sistema de Hotbar e Inventario
         const hotbarBlocks = ['grass', 'dirt', 'oak_log', 'oak_leaves', 'oak_planks', 'crafting_table'];
         let currentBlockIndex = 0;
         let currentBlockType = hotbarBlocks[currentBlockIndex];
@@ -204,8 +200,19 @@
                 if (index === currentBlockIndex) {
                     slot.classList.add('selected');
                 }
-                const textureUrl = textures[blockType === 'grass' ? 'grass_top' : blockType === 'oak_log' ? 'oak_log' : blockType === 'crafting_table' ? 'crafting_table_top' : blockType]?.image.src;
-                if(textureUrl) slot.style.backgroundImage = `url(${textureUrl})`;
+                const textureKey = blockType === 'grass' ? 'grass_top' : blockType === 'oak_log' ? 'oak_log' : blockType === 'crafting_table' ? 'crafting_table_top' : blockType;
+                const texture = textures[textureKey];
+                
+                if (texture && texture.image) {
+                     // Espera a que la imagen cargue antes de asignarla
+                    texture.image.onload = () => {
+                         slot.style.backgroundImage = `url(${texture.image.src})`;
+                    }
+                    // Si ya cargó, la asigna directamente
+                    if (texture.image.src) {
+                         slot.style.backgroundImage = `url(${texture.image.src})`;
+                    }
+                }
                 hotbarElement.appendChild(slot);
             });
             currentBlockType = hotbarBlocks[currentBlockIndex];
@@ -227,7 +234,6 @@
                     const blockType = (y === height - 1) ? 'grass' : 'dirt';
                     createBlock(x, y, z, blockType);
                 }
-                // AÑADIDO: Generar árboles
                 if (Math.random() < 0.02) {
                     const treeHeight = Math.floor(Math.random() * 3) + 4;
                     const groundY = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5) -1;
@@ -245,7 +251,7 @@
                 for (let lz = -2; lz <= 2; lz++) {
                     for (let ly = 0; ly <= 1; ly++) {
                          if (Math.abs(lx) === 2 && Math.abs(lz) === 2) continue;
-                         if (getBlock(x + lx, canopyY + ly, z + lz)) continue; // No sobreescribir bloques
+                         if (getBlock(x + lx, canopyY + ly, z + lz)) continue;
                          createBlock(x + lx, canopyY + ly, z + lz, 'oak_leaves');
                     }
                 }
@@ -254,7 +260,7 @@
 
         function createBlock(x, y, z, type) {
             const key = `${x},${y},${z}`;
-            if (world.has(key)) return; // No crear bloque si ya existe
+            if (world.has(key)) return;
             const material = blockMaterials[type];
             const cube = new THREE.Mesh(cubeGeometry, material);
             cube.position.set(x, y, z);
@@ -314,23 +320,27 @@
                 const key = `${pos.x},${pos.y},${pos.z}`;
                 const blockData = world.get(key);
                 
-                if (event.button === 0) { // Clic izquierdo para destruir
+                if (event.button === 0) {
                     if (blockData && blockData.type === 'bedrock') return;
                     if (world.has(key)) {
                         scene.remove(world.get(key).cube);
                         cubes.splice(cubes.indexOf(world.get(key).cube), 1);
                         world.delete(key);
                     }
-                } else if (event.button === 2) { // Clic derecho para colocar o interactuar
-                    // AÑADIDO: Interactuar con mesa de crafteo
+                } else if (event.button === 2) {
                     if (blockData && blockData.type === 'crafting_table') {
                         openCraftingUI();
                         return;
                     }
                     const newPos = pos.clone().add(intersection.face.normal);
-                    const playerBox = new THREE.Box3().setFromObject(controls.getObject());
+                    const tempPlayerBox = new THREE.Box3();
+                    tempPlayerBox.setFromCenterAndSize(
+                        controls.getObject().position.clone().setY(controls.getObject().position.y - player.height/2), 
+                        new THREE.Vector3(player.width, player.height, player.width)
+                    );
                     const newBlockBox = new THREE.Box3().setFromCenterAndSize(newPos.clone().add(new THREE.Vector3(0.5, 0.5, 0.5)), new THREE.Vector3(1,1,1));
-                    if (player.box.intersectsBox(newBlockBox)) return;
+                    
+                    if (tempPlayerBox.intersectsBox(newBlockBox)) return;
                     
                     createBlock(newPos.x, newPos.y, newPos.z, currentBlockType);
                 }
@@ -345,7 +355,6 @@
                     updateHotbar();
                 }
             }
-            // AÑADIDO: Cerrar UI de crafteo
             if (e.code === 'KeyE' && isCraftingUIOpen) {
                 closeCraftingUI();
             }
@@ -359,10 +368,7 @@
         const craftingOutputSlot = document.getElementById('crafting-out');
         let craftingGrid = Array(9).fill(null);
         
-        // Receta simple: 1 tronco -> 4 tablones
-        const recipes = {
-            'oak_log,,,,,,,,': { result: 'oak_planks', count: 4 }
-        };
+        const recipes = { 'oak_log,,,,,,,,': { result: 'oak_planks', count: 4 } };
 
         function openCraftingUI() {
             isCraftingUIOpen = true;
@@ -373,7 +379,6 @@
         function closeCraftingUI() {
             isCraftingUIOpen = false;
             craftingUI.style.display = 'none';
-            // Limpiar la mesa de crafteo al cerrar
             craftingGrid.fill(null);
             updateCraftingGridUI();
             checkRecipes();
@@ -383,11 +388,10 @@
         
         craftingGridSlots.forEach((slot, index) => {
             slot.addEventListener('click', () => {
-                // Lógica simple: clic para poner el bloque seleccionado
                 if (craftingGrid[index] === null) {
-                    craftingGrid[index] = 'oak_log'; // Demo: solo permite poner troncos
+                    craftingGrid[index] = 'oak_log';
                 } else {
-                    craftingGrid[index] = null; // Clic de nuevo para quitar
+                    craftingGrid[index] = null;
                 }
                 updateCraftingGridUI();
                 checkRecipes();
@@ -397,7 +401,7 @@
         function updateCraftingGridUI() {
             craftingGrid.forEach((item, index) => {
                 const slot = document.getElementById(`crafting-in-${index}`);
-                if (item) {
+                if (item && textures[item]) {
                     slot.style.backgroundImage = `url(${textures[item].image.src})`;
                 } else {
                     slot.style.backgroundImage = 'none';
@@ -408,7 +412,7 @@
         function checkRecipes() {
             const key = craftingGrid.join(',');
             const recipe = recipes[key];
-            if (recipe) {
+            if (recipe && textures[recipe.result]) {
                  craftingOutputSlot.style.backgroundImage = `url(${textures[recipe.result].image.src})`;
             } else {
                  craftingOutputSlot.style.backgroundImage = 'none';
@@ -450,20 +454,19 @@
                 if (checkCollision()) { playerPos.y = oldY; velocity.y = 0; }
                 velocity.y -= 25 * delta;
 
-                // CORREGIDO: Movimiento horizontal
-                const moveSpeed = (keys['ShiftLeft'] ? player.sprintSpeed : player.speed) * delta;
+                const moveSpeed = (keys['ShiftLeft'] || keys['ShiftRight'] ? player.sprintSpeed : player.speed) * delta;
                 const forward = new THREE.Vector3(); 
                 const right = new THREE.Vector3();
                 controls.getDirection(forward); 
                 forward.y = 0; 
                 forward.normalize();
-                right.crossVectors(forward, camera.up).normalize(); // Vector "derecha" corregido
+                right.crossVectors(forward, camera.up).normalize();
 
                 const moveDirection = new THREE.Vector3();
                 if (keys['KeyW']) moveDirection.add(forward); 
                 if (keys['KeyS']) moveDirection.sub(forward);
-                if (keys['KeyA']) moveDirection.sub(right); // Ahora A va a la izquierda
-                if (keys['KeyD']) moveDirection.add(right); // Ahora D va a la derecha
+                if (keys['KeyA']) moveDirection.sub(right);
+                if (keys['KeyD']) moveDirection.add(right);
                 
                 if(moveDirection.length() > 0) moveDirection.normalize();
                 const oldPos = playerPos.clone();
@@ -484,7 +487,6 @@
             renderer.render(scene, camera);
         }
         
-        // Iniciar todo
         updateHotbar();
         animate();
 
