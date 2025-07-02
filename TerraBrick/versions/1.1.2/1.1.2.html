@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TerraBrick - 1.3.0 (Inventario Completo)</title>
+    <style>
+        /* Estilos generales y del juego */
+        body { margin: 0; background-color: #000; font-family: 'Minecraftia', Arial, sans-serif; overflow: hidden; }
+        canvas { display: block; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; background-color: white; border: 1px solid black; transform: translate(-50%, -50%); z-index: 100; }
+        #hotbar { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; z-index: 101; }
+        .slot, .inv-slot {
+            width: 52px; height: 52px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 2px solid #373737;
+            margin: 2px;
+            background-size: 80%;
+            background-position: center;
+            background-repeat: no-repeat;
+            image-rendering: pixelated;
+            position: relative; 
+            box-sizing: border-box;
+        }
+        #hotbar .slot.selected { border-color: white; transform: scale(1.05); }
+        .item-count { position: absolute; bottom: 2px; right: 4px; color: white; font-size: 16px; font-weight: bold; text-shadow: 2px 2px 2px #000; pointer-events: none; }
+
+        /* === Estilos para la interfaz de inventario completa === */
+        #inventory-ui {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 580px;
+            background-color: #1e1e1e;
+            border: 4px solid #585858;
+            padding: 15px;
+            display: none;
+            z-index: 200;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+        #inventory-container { display: grid; grid-template-columns: 200px 1fr; gap: 20px; }
+        #player-view { display: flex; flex-direction: column; align-items: center; }
+        #player-skin { width: 100px; height: 200px; background-color: #555; border: 2px solid #373737; margin-bottom: 10px; }
+        #inventory-crafting-grid { display: grid; grid-template-columns: repeat(2, 56px) 56px repeat(2, 56px); align-items: center; }
+        .craft-arrow { font-size: 30px; text-align: center; }
+        #inventory-main-grid { display: grid; grid-template-columns: repeat(10, 1fr); margin-top: 10px; }
+        #inventory-hotbar-grid { display: grid; grid-template-columns: repeat(10, 1fr); margin-top: 10px; border-top: 2px solid #585858; padding-top: 10px; }
+        #held-item { position: absolute; pointer-events: none; z-index: 201; image-rendering: pixelated; width: 40px; height: 40px; }
+    </style>
+</head>
+<body>
+    <div id="crosshair"></div>
+    <div id="hotbar"></div>
+    
+    <div id="inventory-ui">
+        <div id="inventory-container">
+            <div id="player-and-crafting">
+                <div id="player-view">
+                    <div id="player-skin"></div>
+                    <span>Steve</span>
+                </div>
+                 <h4>Crafting</h4>
+                <div id="inventory-crafting-grid">
+                    <div class="inv-slot" data-slot-index="50"></div><div class="inv-slot" data-slot-index="51"></div>
+                    <div class="craft-arrow">→</div>
+                    <div class="inv-slot" data-slot-index="54"></div><div></div>
+                    <div class="inv-slot" data-slot-index="52"></div><div class="inv-slot" data-slot-index="53"></div>
+                </div>
+            </div>
+            <div id="main-inventory-and-hotbar">
+                <h4>Inventory</h4>
+                <div id="inventory-main-grid"></div>
+                <div id="inventory-hotbar-grid"></div>
+            </div>
+        </div>
+    </div>
+    <div id="held-item"></div>
+
+
+    <script type="importmap">
+        {
+            "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import { checkRecipe } from './crafting.js';
+
+        // --- SISTEMA DE INVENTARIO ---
+        let inventory = new Array(55).fill(null);
+        let selectedSlotIndex = 0;
+        let heldItem = null;
+        let isInventoryOpen = false;
+
+        const hotbarUI = document.getElementById('hotbar');
+        const inventoryUI = document.getElementById('inventory-ui');
+        const inventoryMainGrid = document.getElementById('inventory-main-grid');
+        const inventoryHotbarGrid = document.getElementById('inventory-hotbar-grid');
+        const heldItemUI = document.getElementById('held-item');
+
+        function updateFullInventoryUI() {
+            hotbarUI.innerHTML = '';
+            for (let i = 0; i < 10; i++) { const slot = createSlotElement(i); if (i === selectedSlotIndex) slot.classList.add('selected'); hotbarUI.appendChild(slot); }
+            inventoryMainGrid.innerHTML = ''; inventoryHotbarGrid.innerHTML = '';
+            for (let i = 10; i < 50; i++) inventoryMainGrid.appendChild(createSlotElement(i));
+            for (let i = 0; i < 10; i++) inventoryHotbarGrid.appendChild(createSlotElement(i));
+            for(let i=50; i <= 54; i++) { const slotElement = document.querySelector(`.inv-slot[data-slot-index='${i}']`); if(slotElement) updateSlotContent(slotElement, i); }
+        }
+        function createSlotElement(index) { const slot = document.createElement('div'); slot.classList.add('inv-slot'); slot.dataset.slotIndex = index; updateSlotContent(slot, index); return slot; }
+        function updateSlotContent(slotElement, index) {
+            slotElement.innerHTML = ''; const item = inventory[index];
+            if (item) { const texture = getTextureForItem(item.type); slotElement.style.backgroundImage = `url(${texture.image.src})`;
+                if (item.count > 1) { const countEl = document.createElement('div'); countEl.classList.add('item-count'); countEl.textContent = item.count; slotElement.appendChild(countEl); }
+            } else { slotElement.style.backgroundImage = 'none'; }
+        }
+        function getTextureForItem(itemType) { const key = itemType === 'grass' ? 'grass_top' : itemType === 'oak_log' ? 'oak_log_top' : itemType === 'crafting_table' ? 'crafting_table_top' : itemType; return textures[key]; }
+        function addBlockToInventory(blockType) {
+            for (let i = 0; i < 50; i++) { if (inventory[i] && inventory[i].type === blockType && inventory[i].count < 64) { inventory[i].count++; updateFullInventoryUI(); return; } }
+            for (let i = 0; i < 50; i++) { if (!inventory[i]) { inventory[i] = { type: blockType, count: 1 }; updateFullInventoryUI(); return; } }
+        }
+        function handleInventoryClick(event) {
+            const slotElement = event.target.closest('.inv-slot'); if (!slotElement) return;
+            const index = parseInt(slotElement.dataset.slotIndex); const clickedItem = inventory[index];
+            if (index === 54 && clickedItem && !heldItem) {
+                heldItem = { ...clickedItem }; inventory[index] = null;
+                for(let i = 50; i <= 53; i++) { if (inventory[i]) { inventory[i].count--; if (inventory[i].count === 0) inventory[i] = null; } }
+                updateCraftingResult(); updateFullInventoryUI(); return;
+            }
+            if (!heldItem && clickedItem) {
+                if (event.button === 2) { const half = Math.ceil(clickedItem.count / 2); heldItem = { ...clickedItem, count: half }; clickedItem.count -= half; if (clickedItem.count === 0) inventory[index] = null; } 
+                else { heldItem = clickedItem; inventory[index] = null; }
+            } else if (heldItem && !clickedItem) { inventory[index] = heldItem; heldItem = null;
+            } else if (heldItem && clickedItem) {
+                if (heldItem.type === clickedItem.type && clickedItem.count < 64) {
+                    const canAdd = 64 - clickedItem.count; const toAdd = Math.min(canAdd, heldItem.count);
+                    clickedItem.count += toAdd; heldItem.count -= toAdd; if (heldItem.count === 0) heldItem = null;
+                } else { inventory[index] = heldItem; heldItem = clickedItem; }
+            }
+            if(index >= 50 && index <= 53) updateCraftingResult();
+            updateFullInventoryUI();
+        }
+        function updateCraftingResult() { const craftingGrid = inventory.slice(50, 54); const result = checkRecipe(craftingGrid); inventory[54] = result; updateFullInventoryUI(); }
+        document.addEventListener('mousemove', e => {
+            if (heldItem) { heldItemUI.style.display = 'block'; heldItemUI.style.left = `${e.clientX - 20}px`; heldItemUI.style.top = `${e.clientY - 20}px`; const texture = getTextureForItem(heldItem.type); heldItemUI.style.backgroundImage = `url(${texture.image.src})`; } 
+            else { heldItemUI.style.display = 'none'; }
+        });
+
+        // --- MOTOR DEL JUEGO (Three.js) ---
+        const scene = new THREE.Scene(); scene.background = new THREE.Color(0x87ceeb);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.shadowMap.enabled = true; document.body.appendChild(renderer.domElement);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); directionalLight.position.set(50, 50, 50); directionalLight.castShadow = true; scene.add(directionalLight);
+        const textureLoader = new THREE.TextureLoader(); 
+
+        // === BLOQUE DE TEXTURAS ACTUALIZADO ===
+        const textures = {
+            dirt: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/dirt.png'),
+            grass_top: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_top.png'),
+            grass_side: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/grass_block_side.png'),
+            bedrock: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/bedrock.png'),
+            oak_log: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_log.png'),
+            oak_log_top: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_log_top.png'),
+            oak_leaves: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_leaves.png'),
+            oak_planks: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/oak_planks.png'),
+            crafting_table_top: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/crafting_table_top.png'),
+            crafting_table_side: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/crafting_table_side.png'),
+            crafting_table_front: textureLoader.load('https://lulali20.ipodcraft.com/TerraBrick/images/crafting_table_front.png'),
+        };
+        // ===================================
+        
+        for (const key in textures) { textures[key].magFilter = THREE.NearestFilter; textures[key].minFilter = THREE.NearestFilter; }
+        const blockMaterials = { 'grass': [ new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_top }),  new THREE.MeshLambertMaterial({ map: textures.dirt }), new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_side }), ], 'dirt': new THREE.MeshLambertMaterial({ map: textures.dirt }), 'bedrock': new THREE.MeshLambertMaterial({ map: textures.bedrock }), 'oak_log': [ new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log_top }), new THREE.MeshLambertMaterial({ map: textures.oak_log_top }), new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log }), ], 'oak_leaves': new THREE.MeshLambertMaterial({ map: textures.oak_leaves, transparent: true, opacity: 0.9 }), 'oak_planks': new THREE.MeshLambertMaterial({ map: textures.oak_planks }), 'crafting_table': [ new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_top }), new THREE.MeshLambertMaterial({ map: textures.oak_planks }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_front }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }), ] };
+        const blockLoot = { grass: 'dirt', oak_leaves: 'oak_leaves', dirt: 'dirt', oak_log: 'oak_log', oak_planks: 'oak_planks', crafting_table: 'crafting_table' };
+        const world = new Map(); const cubes = []; const worldSize = 32; const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        for (let x = -worldSize / 2; x < worldSize / 2; x++) { for (let z = -worldSize / 2; z < worldSize / 2; z++) { createBlock(x, -1, z, 'bedrock'); const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5); for (let y = 0; y < height; y++) { const blockType = (y === height - 1) ? 'grass' : 'dirt'; createBlock(x, y, z, blockType); } if (Math.random() < 0.02) { const treeHeight = Math.floor(Math.random() * 3) + 4; const groundY = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5) -1; createTree(x, groundY, z, treeHeight); } } }
+        function createTree(x, y, z, height) { for (let i = 1; i <= height; i++) { createBlock(x, y + i, z, 'oak_log'); } const canopyY = y + height; for (let lx = -2; lx <= 2; lx++) { for (let lz = -2; lz <= 2; lz++) { for (let ly = 0; ly <= 1; ly++) { if (Math.abs(lx) === 2 && Math.abs(lz) === 2) continue; if (getBlock(x + lx, canopyY + ly, z + lz)) continue; createBlock(x + lx, canopyY + ly, z + lz, 'oak_leaves'); }}}}
+        function createBlock(x, y, z, type) { const key = `${x},${y},${z}`; if (world.has(key)) return; const material = blockMaterials[type]; const cube = new THREE.Mesh(cubeGeometry, material); cube.position.set(x, y, z); cube.castShadow = true; cube.receiveShadow = true; scene.add(cube); cubes.push(cube); cube.name = key; const blockBox = new THREE.Box3().setFromObject(cube); world.set(key, { type, cube, box: blockBox }); }
+        function getBlock(x, y, z) { return world.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`); }
+        const controls = new PointerLockControls(camera, document.body); const velocity = new THREE.Vector3(); const keys = {}; const player = { height: 1.8, width: 0.5, speed: 5.0, sprintSpeed: 10.0, jumpHeight: 8.0, onGround: false, box: new THREE.Box3() };
+        controls.getObject().position.set(0, 15, 0); document.addEventListener('keydown', (e) => keys[e.code] = true); document.addEventListener('keyup', (e) => keys[e.code] = false);
+        const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2(0, 0);
+
+        document.body.addEventListener('click', () => { if (!isInventoryOpen) controls.lock(); });
+        inventoryUI.addEventListener('mousedown', handleInventoryClick);
+        inventoryUI.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyE') {
+                isInventoryOpen = !isInventoryOpen;
+                inventoryUI.style.display = isInventoryOpen ? 'block' : 'none';
+                hotbarUI.style.display = isInventoryOpen ? 'none' : 'flex';
+                if (isInventoryOpen) { controls.unlock();
+                } else if(heldItem) { addBlockToInventory(heldItem.type, heldItem.count); heldItem = null; }
+            }
+            if (isInventoryOpen) return;
+            if (e.code.startsWith('Digit')) { const digit = parseInt(e.code.slice(5), 10); selectedSlotIndex = digit === 0 ? 9 : digit - 1; updateFullInventoryUI(); }
+        });
+        document.addEventListener('mousedown', (event) => {
+            if (!controls.isLocked) return;
+            raycaster.setFromCamera(pointer, camera); const intersects = raycaster.intersectObjects(cubes);
+            if (intersects.length > 0) {
+                const intersection = intersects[0]; if (intersection.distance > 6) return;
+                const pos = intersection.object.position; const key = `${pos.x},${pos.y},${pos.z}`; const blockData = world.get(key);
+                if (event.button === 0) {
+                    if (blockData && blockData.type !== 'bedrock') { const loot = blockLoot[blockData.type]; if (loot) addBlockToInventory(loot); scene.remove(world.get(key).cube); cubes.splice(cubes.indexOf(world.get(key).cube), 1); world.delete(key); }
+                } else if (event.button === 2) {
+                    const itemToPlace = inventory[selectedSlotIndex];
+                    if (itemToPlace) {
+                        const newPos = pos.clone().add(intersection.face.normal); const tempPlayerBox = new THREE.Box3(); tempPlayerBox.setFromCenterAndSize( controls.getObject().position.clone().setY(controls.getObject().position.y - player.height/2), new THREE.Vector3(player.width, player.height, player.width) ); const newBlockBox = new THREE.Box3().setFromCenterAndSize(newPos.clone().add(new THREE.Vector3(0.5, 0.5, 0.5)), new THREE.Vector3(1,1,1));
+                        if (tempPlayerBox.intersectsBox(newBlockBox)) return;
+                        createBlock(newPos.x, newPos.y, newPos.z, itemToPlace.type);
+                        itemToPlace.count--; if (itemToPlace.count === 0) inventory[selectedSlotIndex] = null;
+                        updateFullInventoryUI();
+                    }
+                }
+            }
+        });
+
+        let lastTime = performance.now();
+        function animate() {
+            requestAnimationFrame(animate); const time = performance.now(); const delta = (time - lastTime) / 1000;
+            if(controls.isLocked) {
+                const playerPos = controls.getObject().position; updatePlayerBox(playerPos); player.onGround = false; const groundCheckPos = playerPos.clone(); groundCheckPos.y -= 0.05; updatePlayerBox(groundCheckPos); if (checkCollision()) { player.onGround = true; velocity.y = Math.max(0, velocity.y); } if (keys['Space'] && player.onGround) { velocity.y = player.jumpHeight; } const oldY = playerPos.y; playerPos.y += velocity.y * delta; updatePlayerBox(playerPos); if (checkCollision()) { playerPos.y = oldY; velocity.y = 0; } velocity.y -= 25 * delta; const moveSpeed = (keys['ShiftLeft'] || keys['ShiftRight'] ? player.sprintSpeed : player.speed) * delta; const forward = new THREE.Vector3(); const right = new THREE.Vector3(); controls.getDirection(forward); forward.y = 0; forward.normalize(); right.crossVectors(forward, camera.up).normalize(); const moveDirection = new THREE.Vector3(); if (keys['KeyW']) moveDirection.add(forward); if (keys['KeyS']) moveDirection.sub(forward); if (keys['KeyA']) moveDirection.sub(right); if (keys['KeyD']) moveDirection.add(right); if(moveDirection.length() > 0) moveDirection.normalize(); const oldPos = playerPos.clone(); playerPos.x += moveDirection.x * moveSpeed; updatePlayerBox(playerPos); if (checkCollision()) { playerPos.x = oldPos.x; } playerPos.z += moveDirection.z * moveSpeed; updatePlayerBox(playerPos); if (checkCollision()) { playerPos.z = oldPos.z; } if (playerPos.y < -20) { playerPos.set(0, 15, 0); velocity.set(0, 0, 0); }
+            }
+            lastTime = time; renderer.render(scene, camera);
+        }
+        function updatePlayerBox(position) { player.box.min.set(position.x - player.width / 2, position.y - player.height, position.z - player.width / 2); player.box.max.set(position.x + player.width / 2, position.y, position.z + player.width / 2); }
+        function checkCollision() { for (const block of world.values()) { if (player.box.intersectsBox(block.box)) return true; } return false; }
+        
+        updateFullInventoryUI();
+        animate();
+    </script>
+</body>
+</html>
