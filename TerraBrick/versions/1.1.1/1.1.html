@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TerraBrick - 1.2.0 (Inventario)</title>
+    <!-- Los estilos (CSS) se han actualizado para el contador de ítems -->
+    <style>
+        body { margin: 0; background-color: #000; font-family: 'Minecraftia', Arial, sans-serif; }
+        canvas { display: block; }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            font-size: 20px;
+            z-index: 100;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border: 1px solid black;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+        #hotbar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid #555;
+            z-index: 101;
+        }
+        .slot {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #888;
+            margin: 2px;
+            background-size: cover;
+            image-rendering: pixelated;
+            /* AÑADIDO: Necesario para posicionar el contador de ítems */
+            position: relative; 
+        }
+        .slot.selected {
+            border-color: white;
+            transform: scale(1.1);
+        }
+        /* AÑADIDO: Estilos para el número de ítems en cada slot */
+        .item-count {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 2px #000000;
+            pointer-events: none; /* Para que no interfiera con el clic */
+        }
+        #crafting-ui {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #c6c6c6;
+            border: 4px solid #585858;
+            padding: 20px;
+            display: none;
+            z-index: 200;
+            text-align: center;
+            color: #373737;
+        }
+        #crafting-ui h2 { margin-top: 0; }
+        .crafting-container { display: flex; align-items: center; justify-content: center; }
+        .crafting-grid { display: grid; grid-template-columns: repeat(3, 50px); gap: 5px; }
+        .crafting-arrow { font-size: 40px; margin: 0 20px; }
+        .crafting-slot, .output-slot {
+            width: 50px;
+            height: 50px;
+            background-color: #8b8b8b;
+            border: 2px inset #ddd;
+            background-size: cover;
+            image-rendering: pixelated;
+        }
+        #crafting-close-button {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #373737;
+        }
+    </style>
+</head>
+<body>
+    <div id="instructions">
+        Haz clic para empezar<br/>
+        W, A, S, D = Moverse | Espacio = Saltar | Shift = Correr<br/>
+        Clic Izquierdo = Destruir | Clic Derecho = Colocar/Interactuar<br/>
+        Teclas 0-9 = Cambiar slot | E = Cerrar crafteo
+    </div>
+    <div id="crosshair"></div>
+    <div id="hotbar"></div>
+    <!-- La UI de crafteo no cambia -->
+    <div id="crafting-ui">
+        <span id="crafting-close-button">×</span>
+        <h2>Mesa de trabajo</h2>
+        <div class="crafting-container">
+            <div class="crafting-grid">
+                <div class="crafting-slot" id="crafting-in-0"></div><div class="crafting-slot" id="crafting-in-1"></div><div class="crafting-slot" id="crafting-in-2"></div>
+                <div class="crafting-slot" id="crafting-in-3"></div><div class="crafting-slot" id="crafting-in-4"></div><div class="crafting-slot" id="crafting-in-5"></div>
+                <div class="crafting-slot" id="crafting-in-6"></div><div class="crafting-slot" id="crafting-in-7"></div><div class="crafting-slot" id="crafting-in-8"></div>
+            </div>
+            <div class="crafting-arrow">→</div>
+            <div class="output-slot" id="crafting-out"></div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import * as crafting from './crafting.js';
+
+        // ======================================================
+        // 1. CONFIGURACIÓN BÁSICA Y DE LA ESCENA (SIN CAMBIOS)
+        // ======================================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        // ... resto de configuración de escena sin cambios ...
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(50, 50, 50);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+        
+        // ======================================================
+        // 2. TEXTURAS, MATERIALES E INVENTARIO
+        // ======================================================
+        const textureLoader = new THREE.TextureLoader();
+        const textures = {
+            dirt: textureLoader.load('https://i.imgur.com/x0sAlM8.png'),
+            grass_top: textureLoader.load('https://i.imgur.com/iZgCoXA.png'),
+            grass_side: textureLoader.load('https://i.imgur.com/28sZq3Y.png'),
+            bedrock: textureLoader.load('https://i.imgur.com/KqB5D14.png'),
+            oak_log: textureLoader.load('https://i.imgur.com/24uh4yG.png'),
+            oak_log_top: textureLoader.load('https://i.imgur.com/ag5s942.png'),
+            oak_leaves: textureLoader.load('https://i.imgur.com/k2bZ1vA.png'),
+            oak_planks: textureLoader.load('https://i.imgur.com/39b7a42.png'),
+            crafting_table_top: textureLoader.load('https://i.imgur.com/2E9aL1f.png'),
+            crafting_table_side: textureLoader.load('https://i.imgur.com/dKRjDb8.png'),
+            crafting_table_front: textureLoader.load('https://i.imgur.com/ES4z3aN.png'),
+        };
+
+        for (const key in textures) {
+            textures[key].magFilter = THREE.NearestFilter;
+            textures[key].minFilter = THREE.NearestFilter;
+        }
+
+        const blockMaterials = {
+            // ... materiales sin cambios ...
+            'grass': [ new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_top }),  new THREE.MeshLambertMaterial({ map: textures.dirt }), new THREE.MeshLambertMaterial({ map: textures.grass_side }), new THREE.MeshLambertMaterial({ map: textures.grass_side }), ],
+            'dirt': new THREE.MeshLambertMaterial({ map: textures.dirt }),
+            'bedrock': new THREE.MeshLambertMaterial({ map: textures.bedrock }),
+            'oak_log': [ new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log_top }), new THREE.MeshLambertMaterial({ map: textures.oak_log_top }), new THREE.MeshLambertMaterial({ map: textures.oak_log }), new THREE.MeshLambertMaterial({ map: textures.oak_log }), ],
+            'oak_leaves': new THREE.MeshLambertMaterial({ map: textures.oak_leaves, transparent: true, opacity: 0.9 }),
+            'oak_planks': new THREE.MeshLambertMaterial({ map: textures.oak_planks }),
+            'crafting_table': [ new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_top }), new THREE.MeshLambertMaterial({ map: textures.oak_planks }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_front }), new THREE.MeshLambertMaterial({ map: textures.crafting_table_side }), ]
+        };
+        
+        // AÑADIDO: Tabla de botín. Define qué bloque se obtiene al romper otro.
+        const blockLoot = {
+            grass: 'dirt',
+            oak_leaves: 'oak_leaves', // Podría dropear un sapling en el futuro
+            dirt: 'dirt',
+            oak_log: 'oak_log',
+            oak_planks: 'oak_planks',
+            crafting_table: 'crafting_table'
+            // Bedrock no está aquí, por lo que no dropea nada.
+        };
+
+        // CAMBIO: El inventario ahora es un array de 10 slots, inicialmente vacíos.
+        // Cada slot puede ser `null` o un objeto: { type: 'string', count: number }
+        let hotbar = new Array(10).fill(null);
+        let selectedSlotIndex = 0;
+        const hotbarElement = document.getElementById('hotbar');
+
+        function updateHotbar() {
+            hotbarElement.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const slot = document.createElement('div');
+                slot.classList.add('slot');
+                
+                const item = hotbar[i];
+                if (item) {
+                    // Muestra la imagen del bloque
+                    const textureKey = item.type === 'grass' ? 'grass_top' : item.type === 'oak_log' ? 'oak_log_top' : item.type === 'crafting_table' ? 'crafting_table_top' : item.type;
+                    const texture = textures[textureKey];
+                    if (texture) {
+                        slot.style.backgroundImage = `url(${texture.image.src})`;
+                    }
+                    
+                    // Muestra la cantidad si es mayor que 1
+                    if (item.count > 1) {
+                        const countElement = document.createElement('div');
+                        countElement.classList.add('item-count');
+                        countElement.textContent = item.count;
+                        slot.appendChild(countElement);
+                    }
+                }
+                
+                if (i === selectedSlotIndex) {
+                    slot.classList.add('selected');
+                }
+                hotbarElement.appendChild(slot);
+            }
+        }
+
+        // AÑADIDO: Función para añadir un bloque al inventario (hotbar).
+        function addBlockToInventory(blockType) {
+            // 1. Buscar un stack existente no completo
+            for (let i = 0; i < hotbar.length; i++) {
+                const item = hotbar[i];
+                if (item && item.type === blockType && item.count < 64) {
+                    item.count++;
+                    updateHotbar();
+                    return; // Ítem añadido
+                }
+            }
+            
+            // 2. Si no, buscar un slot vacío
+            for (let i = 0; i < hotbar.length; i++) {
+                if (hotbar[i] === null) {
+                    hotbar[i] = { type: blockType, count: 1 };
+                    updateHotbar();
+                    return; // Ítem añadido
+                }
+            }
+            
+            // Si llegamos aquí, el inventario está lleno.
+            console.log("¡Inventario lleno!");
+        }
+
+
+        // ======================================================
+        // 3. GENERACIÓN DEL MUNDO (SIN CAMBIOS)
+        // ======================================================
+        // ... todo el código de generación del mundo y de los árboles no cambia ...
+        const world = new Map(); const cubes = []; const worldSize = 32; const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        for (let x = -worldSize / 2; x < worldSize / 2; x++) { for (let z = -worldSize / 2; z < worldSize / 2; z++) { createBlock(x, -1, z, 'bedrock'); const height = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5); for (let y = 0; y < height; y++) { const blockType = (y === height - 1) ? 'grass' : 'dirt'; createBlock(x, y, z, blockType); } if (Math.random() < 0.02) { const treeHeight = Math.floor(Math.random() * 3) + 4; const groundY = Math.floor(Math.sin(x/8) * Math.cos(z/8) * 3 + 5) -1; createTree(x, groundY, z, treeHeight); } } }
+        function createTree(x, y, z, height) { for (let i = 1; i <= height; i++) { createBlock(x, y + i, z, 'oak_log'); } const canopyY = y + height; for (let lx = -2; lx <= 2; lx++) { for (let lz = -2; lz <= 2; lz++) { for (let ly = 0; ly <= 1; ly++) { if (Math.abs(lx) === 2 && Math.abs(lz) === 2) continue; if (getBlock(x + lx, canopyY + ly, z + lz)) continue; createBlock(x + lx, canopyY + ly, z + lz, 'oak_leaves'); }}}}
+        function createBlock(x, y, z, type) { const key = `${x},${y},${z}`; if (world.has(key)) return; const material = blockMaterials[type]; const cube = new THREE.Mesh(cubeGeometry, material); cube.position.set(x, y, z); cube.castShadow = true; cube.receiveShadow = true; scene.add(cube); cubes.push(cube); cube.name = key; const blockBox = new THREE.Box3().setFromObject(cube); world.set(key, { type, cube, box: blockBox }); }
+        function getBlock(x, y, z) { return world.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`); }
+
+        // ======================================================
+        // 4. CONTROLES Y FÍSICA DEL JUGADOR (SIN CAMBIOS)
+        // ======================================================
+        // ... el código de controles y física del jugador no cambia ...
+        const controls = new PointerLockControls(camera, document.body); const instructions = document.getElementById('instructions');
+        document.body.addEventListener('click', () => { if (!crafting.getIsCraftingOpen()) controls.lock(); });
+        controls.addEventListener('lock', () => { instructions.style.display = 'none'; document.getElementById('crosshair').style.display = 'block'; });
+        controls.addEventListener('unlock', () => { if (!crafting.getIsCraftingOpen()) instructions.style.display = ''; document.getElementById('crosshair').style.display = 'none'; });
+        const velocity = new THREE.Vector3(); const keys = {}; const player = { height: 1.8, width: 0.5, speed: 5.0, sprintSpeed: 10.0, jumpHeight: 8.0, onGround: false, box: new THREE.Box3() };
+        controls.getObject().position.set(0, 15, 0); document.addEventListener('keydown', (e) => keys[e.code] = true); document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        // ======================================================
+        // 5. INTERACCIÓN (ROMPER, PONER, CRAFTEAR)
+        // ======================================================
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2(0, 0);
+
+        document.addEventListener('mousedown', (event) => {
+            if (!controls.isLocked) return;
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObjects(cubes);
+            if (intersects.length > 0) {
+                const intersection = intersects[0];
+                if (intersection.distance > 6) return;
+                const pos = intersection.object.position;
+                const key = `${pos.x},${pos.y},${pos.z}`;
+                const blockData = world.get(key);
+                
+                if (event.button === 0) { // Clic izquierdo para destruir y recolectar
+                    if (blockData && blockData.type !== 'bedrock') {
+                        const loot = blockLoot[blockData.type];
+                        if (loot) {
+                            addBlockToInventory(loot);
+                        }
+                        scene.remove(world.get(key).cube);
+                        cubes.splice(cubes.indexOf(world.get(key).cube), 1);
+                        world.delete(key);
+                    }
+                } else if (event.button === 2) { // Clic derecho para colocar o interactuar
+                    if (blockData && blockData.type === 'crafting_table') {
+                        crafting.openCraftingUI();
+                        return;
+                    }
+                    
+                    // CAMBIO: Lógica para consumir el bloque al colocar
+                    const itemToPlace = hotbar[selectedSlotIndex];
+                    if (itemToPlace) {
+                        const newPos = pos.clone().add(intersection.face.normal);
+                        const tempPlayerBox = new THREE.Box3();
+                        tempPlayerBox.setFromCenterAndSize( controls.getObject().position.clone().setY(controls.getObject().position.y - player.height/2), new THREE.Vector3(player.width, player.height, player.width) );
+                        const newBlockBox = new THREE.Box3().setFromCenterAndSize(newPos.clone().add(new THREE.Vector3(0.5, 0.5, 0.5)), new THREE.Vector3(1,1,1));
+                        
+                        if (tempPlayerBox.intersectsBox(newBlockBox)) return;
+                        
+                        // Coloca el bloque
+                        createBlock(newPos.x, newPos.y, newPos.z, itemToPlace.type);
+                        
+                        // Consume el ítem
+                        itemToPlace.count--;
+                        if (itemToPlace.count === 0) {
+                            hotbar[selectedSlotIndex] = null;
+                        }
+                        updateHotbar();
+                    }
+                }
+            }
+        });
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+            // CAMBIO: Se actualiza para 10 slots (0-9)
+            if (e.code.startsWith('Digit')) {
+                const digit = parseInt(e.code.slice(5), 10);
+                if (digit === 0) {
+                    selectedSlotIndex = 9; // Tecla 0 selecciona el slot 10
+                } else if (digit >= 1 && digit <= 9) {
+                    selectedSlotIndex = digit - 1;
+                }
+                updateHotbar();
+            }
+            if (e.code === 'KeyE' && crafting.getIsCraftingOpen()) {
+                crafting.closeCraftingUI();
+            }
+        });
+        
+        // ======================================================
+        // 7. BUCLE DE ANIMACIÓN Y FÍSICA (SIN CAMBIOS)
+        // ======================================================
+        let lastTime = performance.now();
+        // ... el resto del código del bucle de animación y física no cambia ...
+        function updatePlayerBox(position) { player.box.min.set(position.x - player.width / 2, position.y - player.height, position.z - player.width / 2); player.box.max.set(position.x + player.width / 2, position.y, position.z + player.width / 2); }
+        function checkCollision() { for (const block of world.values()) { if (player.box.intersectsBox(block.box)) return true; } return false; }
+        function animate() { requestAnimationFrame(animate); const time = performance.now(); const delta = (time - lastTime) / 1000; const playerPos = controls.getObject().position; if (controls.isLocked) { updatePlayerBox(playerPos); player.onGround = false; const groundCheckPos = playerPos.clone(); groundCheckPos.y -= 0.05; updatePlayerBox(groundCheckPos); if (checkCollision()) { player.onGround = true; velocity.y = Math.max(0, velocity.y); } if (keys['Space'] && player.onGround) { velocity.y = player.jumpHeight; } const oldY = playerPos.y; playerPos.y += velocity.y * delta; updatePlayerBox(playerPos); if (checkCollision()) { playerPos.y = oldY; velocity.y = 0; } velocity.y -= 25 * delta; const moveSpeed = (keys['ShiftLeft'] || keys['ShiftRight'] ? player.sprintSpeed : player.speed) * delta; const forward = new THREE.Vector3(); const right = new THREE.Vector3(); controls.getDirection(forward); forward.y = 0; forward.normalize(); right.crossVectors(forward, camera.up).normalize(); const moveDirection = new THREE.Vector3(); if (keys['KeyW']) moveDirection.add(forward); if (keys['KeyS']) moveDirection.sub(forward); if (keys['KeyA']) moveDirection.sub(right); if (keys['KeyD']) moveDirection.add(right); if(moveDirection.length() > 0) moveDirection.normalize(); const oldPos = playerPos.clone(); playerPos.x += moveDirection.x * moveSpeed; updatePlayerBox(playerPos); if (checkCollision()) { playerPos.x = oldPos.x; } playerPos.z += moveDirection.z * moveSpeed; updatePlayerBox(playerPos); if (checkCollision()) { playerPos.z = oldPos.z; } if (playerPos.y < -20) { playerPos.set(0, 15, 0); velocity.set(0, 0, 0); } } lastTime = time; renderer.render(scene, camera); }
+        
+        // ======================================================
+        // Iniciar todo
+        // ======================================================
+        crafting.initCrafting(controls, textures);
+        updateHotbar(); // Dibuja la hotbar vacía al inicio
+        animate();
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    </script>
+</body>
+</html>
