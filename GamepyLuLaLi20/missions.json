@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "npc": "Profesor Pixel",
+    "mensaje": "¡Bienvenido! Usa la barra de comandos para escribir código Python. Escribe: print('¡Hola mundo!') y presiona el botón.",
+    "validacion": "(userCode, output) => output === '¡Hola mundo!'"
+  },
+  {
+    "id": 2,
+    "npc": "Guardiana Variable",
+    "mensaje": "Declara una variable llamada nombre y asígnale tu nombre. Imprime el valor con print(nombre).",
+    "validacion": "(userCode, output) => /nombre\\s*=\\s*['\\\"]\\w+['\\\"]/i.test(userCode) && !!output"
+  }
+]
