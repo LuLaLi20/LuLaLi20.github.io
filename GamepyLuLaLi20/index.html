@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pixelart Coding Quest</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="gameCanvas" width="512" height="384"></canvas>
+  <div id="missionBox">
+    <p id="missionText"></p>
+    <p id="feedback"></p>
+  </div>
+
+  <!-- Barra de comandos abajo -->
+  <div id="commandBar">
+    <textarea id="codeEditor" placeholder="Escribe tu código Python aquí..."></textarea>
+    <button id="submitCode">Ejecutar</button>
+  </div>
+
+  <!-- Carga Pyodide desde CDN -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
